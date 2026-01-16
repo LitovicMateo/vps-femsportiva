@@ -1,0 +1,31 @@
+# Environment files
+.env
+.env.local
+
+# WordPress uploads
+data/uploads/*
+!data/uploads/.gitkeep
+
+# Database backups
+backups/
+*.sql
+*.sql.gz
+
+# Certbot certificates
+certbot/
+
+# Docker volumes
+volumes/
+
+# Node
+node_modules/
+.next/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

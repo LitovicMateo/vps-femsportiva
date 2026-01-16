@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      target: builder
+    command: sh -lc "npm ci && npm run dev -- -H 0.0.0.0"
+    user: root
+    volumes:
+      - ./frontend:/app:delegated
+      - node_modules:/app/node_modules
+      - nextjs_build:/app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
+      NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
+      NODE_ENV: development
+    depends_on:
+      - wordpress
+
+  wordpress:
+    restart: "no"
+    ports:
+      - "8080:80" # Expose WordPress directly (no Nginx)
+    environment:
+      WORDPRESS_DEBUG: "1"
+
+  database:
+    restart: "no"
+
+volumes:
+  node_modules:
+  nextjs_build:
