@@ -92,7 +92,7 @@ switch ($Command.ToLower()) {
         $confirm = Read-Host "Are you sure? (yes/no)"
         if ($confirm -eq "yes") {
             docker-compose down -v
-            Write-Host "✓ Cleaned up" -ForegroundColor Green
+            Write-Host "Cleaned up" -ForegroundColor Green
         } else {
             Write-Host "Cancelled" -ForegroundColor Yellow
         }
