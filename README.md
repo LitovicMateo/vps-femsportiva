@@ -69,6 +69,18 @@ cp .env.example .env.dev
 
 ### 3. Start Development Environment
 
+**On Windows (PowerShell):**
+
+```powershell
+# Using PowerShell script (recommended)
+.\manage.ps1 dev
+
+# Or using Make
+make dev
+```
+
+**On Linux/Mac:**
+
 ```bash
 # Using Make (recommended)
 make dev
@@ -146,7 +158,11 @@ SSL_EMAIL=admin@yourdomain.com
 
 ## Makefile Commands
 
+All commands are available through `Makefile` (Linux/Mac) or `manage.ps1` (Windows PowerShell).
+
 ### Environment Management
+
+**Linux/Mac:**
 
 ```bash
 make dev              # Start development environment
@@ -157,7 +173,20 @@ make down             # Stop all services
 make clean            # Stop and remove volumes (WARNING: deletes data)
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+.\manage.ps1 dev              # Start development environment
+.\manage.ps1 staging          # Start staging environment
+.\manage.ps1 prod             # Start production environment
+.\manage.ps1 dev-build        # Build and start development
+.\manage.ps1 down             # Stop all services
+.\manage.ps1 clean            # Stop and remove volumes (WARNING: deletes data)
+```
+
 ### Logs
+
+**Linux/Mac:**
 
 ```bash
 make logs             # Show logs (all services)
@@ -166,7 +195,18 @@ make logs-frontend    # Show Next.js logs
 make logs-nginx       # Show Nginx logs
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+.\manage.ps1 logs             # Show logs (all services)
+.\manage.ps1 logs-wp          # Show WordPress logs
+.\manage.ps1 logs-frontend    # Show Next.js logs
+.\manage.ps1 logs-nginx       # Show Nginx logs
+```
+
 ### Database Management
+
+**Linux/Mac:**
 
 ```bash
 # Backup database
@@ -180,10 +220,53 @@ make restore-db ENV=staging FILE=./backups/backup_prod_20260116_120000.sql.gz
 make sync-staging
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+# Backup database (requires WSL or Git Bash)
+.\manage.ps1 backup-db dev
+# Note: Will display instructions to run via bash
+
+# Restore database (requires WSL or Git Bash)
+.\manage.ps1 restore-db staging .\backups\backup_prod_20260116_120000.sql.gz
+# Note: Will display instructions to run via bash
+
+# For actual database operations on Windows, use WSL:
+wsl bash scripts/backup-db.sh dev
+wsl bash scripts/restore-db.sh staging ./backups/backup_prod_20260116_120000.sql.gz
+```
+
+### Shell Access
+
+**Linux/Mac:**
+
+```bash
+make shell-wp         # WordPress shell
+make shell-db         # Database shell
+make shell-frontend   # Frontend shell
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\manage.ps1 shell-wp         # WordPress shell
+.\manage.ps1 shell-db         # Database shell
+.\manage.ps1 shell-frontend   # Frontend shell
+```
+
 ### Production Setup
+
+**Linux/Mac:**
 
 ```bash
 # Initialize SSL certificates (run once on VPS)
+make init-ssl
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# For production SSL setup, run on Linux VPS:
 make init-ssl
 ```
 
@@ -232,14 +315,12 @@ make init-ssl
    ```
 
    Update:
-
    - Set `DOMAIN=yourdomain.com`
    - Set `SSL_EMAIL=admin@yourdomain.com`
    - Generate strong passwords for database
    - Generate WordPress security keys
 
 7. **Point your domain to VPS:**
-
    - Add A record: `yourdomain.com` → `your-vps-ip`
    - Add A record: `www.yourdomain.com` → `your-vps-ip`
    - Wait for DNS propagation (5-30 minutes)
@@ -264,6 +345,8 @@ make init-ssl
 
 ### Updating Production
 
+**On VPS (Linux):**
+
 ```bash
 # SSH to VPS
 ssh root@your-vps-ip
@@ -273,6 +356,21 @@ cd /var/www/vps-blog
 git pull origin main
 
 # Rebuild and restart
+make prod-build
+```
+
+**Windows Development → VPS:**
+
+```powershell
+# 1. Commit and push changes
+git add .
+git commit -m "Update features"
+git push origin main
+
+# 2. SSH to VPS and pull
+ssh root@your-vps-ip
+cd /var/www/vps-blog
+git pull origin main
 make prod-build
 ```
 
@@ -296,6 +394,8 @@ make prod-build
 
    ```bash
    make staging
+   # Or use the PowerShell script from Windows:
+   # .\manage.ps1 staging
    ```
 
 4. **Access staging:**
@@ -303,6 +403,8 @@ make prod-build
    - WordPress: http://localhost:8081/wp/wp-admin
 
 ### Sync Production Data to Staging
+
+**On Linux/Mac or WSL:**
 
 ```bash
 # This will:
@@ -314,9 +416,18 @@ make prod-build
 make sync-staging
 ```
 
+**On Windows (PowerShell):**
+
+```powershell
+# Use WSL to run bash scripts
+wsl make sync-staging
+```
+
 ## Database Management
 
 ### Backup Database
+
+**On Linux/Mac or VPS:**
 
 ```bash
 # Backup development
@@ -324,6 +435,14 @@ make backup-db ENV=dev
 
 # Backup production (on VPS)
 make backup-db ENV=prod
+```
+
+**On Windows (PowerShell):**
+
+```powershell
+# Use WSL or Git Bash for database operations
+wsl bash scripts/backup-db.sh dev
+wsl bash scripts/backup-db.sh prod
 ```
 
 Backups are saved to `./backups/` with timestamp:
@@ -334,15 +453,30 @@ backups/backup_prod_20260116_143022.sql.gz
 
 ### Restore Database
 
+**On Linux/Mac or VPS:**
+
 ```bash
 make restore-db ENV=staging FILE=./backups/backup_prod_20260116_143022.sql.gz
 ```
 
+**On Windows (PowerShell):**
+
+```powershell
+wsl bash scripts/restore-db.sh staging ./backups/backup_prod_20260116_143022.sql.gz
+```
+
 ### Manual Database Access
 
+**All Platforms:**
+
 ```bash
-# Access MySQL shell
-docker-compose exec database mysql -u root -p
+# Access MySQL shell (use make or manage.ps1)
+make shell-db
+# or
+.\manage.ps1 shell-db
+
+# Then inside the container:
+mysql -u root -p
 
 # Import SQL file manually
 docker-compose exec -T database mysql -u root -p wordpress_dev < backup.sql

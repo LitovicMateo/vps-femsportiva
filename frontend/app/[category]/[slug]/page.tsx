@@ -1,15 +1,76 @@
-import { fetchPostBySlug, fetchRelatedPosts } from "@/lib/wordpress";
+import { fetchPostBySlugAPI, fetchPostsAPI } from "@/lib/api";
 import PostCard from "@/components/PostCard";
+import Footer from "@/components/Footer";
+import StructuredData from "@/components/StructuredData";
+import PostContent from "@/components/PostContent";
+import ShareButtons from "@/components/ShareButtons";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import styles from "./page.module.css";
+import type { Metadata } from "next";
+
+export const dynamic = 'force-dynamic';
 
 interface PostPageProps {
   params: { category: string; slug: string };
 }
 
+export async function generateMetadata({
+  params,
+}: PostPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const post = await fetchPostBySlugAPI(resolvedParams.slug);
+
+  if (!post) {
+    return {
+      title: "Post Not Found",
+    };
+  }
+
+  const categories = post._embedded?.["wp:term"]?.[0] || [];
+  const postCategory = categories.find(
+    (cat: any) => cat.slug === resolvedParams.category,
+  );
+  const author = post._embedded?.author?.[0];
+  const featuredImage =
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || null;
+
+  // Extract plain text from HTML content for description
+  const plainText = post.excerpt.rendered.replace(/<[^>]*>/g, "").trim();
+  const description =
+    plainText.substring(0, 160) + (plainText.length > 160 ? "..." : "");
+
+  // Generate dynamic OG image URL
+  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title.rendered)}&category=${encodeURIComponent(postCategory?.name || "")}&author=${encodeURIComponent(author?.name || "")}&type=post`;
+
+  return {
+    title: post.title.rendered,
+    description: description,
+    keywords: categories.map((cat: any) => cat.name),
+    authors: author ? [{ name: author.name }] : undefined,
+    openGraph: {
+      title: post.title.rendered,
+      description: description,
+      type: "article",
+      publishedTime: post.date,
+      modifiedTime: post.modified,
+      authors: author ? [author.name] : undefined,
+      tags: categories.map((cat: any) => cat.name),
+      images: featuredImage ? [{ url: featuredImage }] : [{ url: ogImageUrl }],
+      url: `/${resolvedParams.category}/${resolvedParams.slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title.rendered,
+      description: description,
+      images: featuredImage ? [featuredImage] : [ogImageUrl],
+    },
+  };
+}
+
 export default async function PostPage({ params }: PostPageProps) {
   const resolvedParams = await params;
-  const post = await fetchPostBySlug(resolvedParams.slug);
+  const post = await fetchPostBySlugAPI(resolvedParams.slug);
 
   if (!post) {
     notFound();
@@ -18,7 +79,7 @@ export default async function PostPage({ params }: PostPageProps) {
   // Verify the post is in the correct category
   const categories = post._embedded?.["wp:term"]?.[0] || [];
   const postCategory = categories.find(
-    (cat) => cat.slug === resolvedParams.category
+    (cat: any) => cat.slug === resolvedParams.category,
   );
 
   if (!postCategory) {
@@ -31,7 +92,14 @@ export default async function PostPage({ params }: PostPageProps) {
   const tags = post.tags || [];
 
   // Fetch related posts based on tags
-  const relatedPosts = await fetchRelatedPosts(post.id, tags, 3);
+  // For now, just fetch recent posts from same category
+  const relatedData = await fetchPostsAPI({
+    categories: postCategory.id,
+    perPage: 4,
+  });
+  const relatedPosts = (relatedData.posts || [])
+    .filter((p: any) => p.id !== post.id)
+    .slice(0, 3);
 
   const date = new Date(post.date).toLocaleDateString("en-US", {
     year: "numeric",
@@ -39,65 +107,99 @@ export default async function PostPage({ params }: PostPageProps) {
     day: "numeric",
   });
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title.rendered,
+    description: post.excerpt.rendered.replace(/<[^>]*>/g, "").trim(),
+    image: featuredImage || undefined,
+    datePublished: post.date,
+    dateModified: post.modified,
+    author: author
+      ? {
+          "@type": "Person",
+          name: author.name,
+          url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${author.slug}`,
+        }
+      : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "My Awesome Blog",
+      logo: {
+        "@type": "ImageObject",
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}/${resolvedParams.slug}`,
+    },
+    keywords: categories.map((cat: any) => cat.name).join(", "),
+  };
+
+  // Build full URL for sharing
+  const fullUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${resolvedParams.category}/${resolvedParams.slug}`;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
+      <StructuredData data={structuredData} />
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
           <Link
             href={`/${resolvedParams.category}`}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
+            className={styles.backLink}
           >
             ← Back to {postCategory.name}
           </Link>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className={styles.main}>
         {/* Article Header */}
-        <article className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <article className={styles.article}>
           {featuredImage && (
-            <div className="aspect-video w-full overflow-hidden">
-              <img
-                src={featuredImage}
-                alt={post.title.rendered}
-                className="w-full h-full object-cover"
-              />
+            <div className={styles.featuredImage}>
+              <img src={featuredImage} alt={post.title.rendered} />
             </div>
           )}
 
-          <div className="p-8 lg:p-12">
+          <div className={styles.content}>
             {/* Category Badge */}
             <Link
               href={`/${resolvedParams.category}`}
-              className="inline-block text-sm font-semibold text-blue-600 hover:text-blue-800 uppercase tracking-wide mb-4"
+              className={styles.categoryBadge}
             >
               {postCategory.name}
             </Link>
 
             {/* Title */}
             <h1
-              className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6"
+              className={styles.title}
               dangerouslySetInnerHTML={{ __html: post.title.rendered }}
             />
 
             {/* Meta */}
-            <div className="flex items-center gap-4 mb-8 pb-8 border-b border-gray-200">
+            <div className={styles.meta}>
               {author && (
-                <div className="flex items-center gap-3">
+                <div className={styles.authorInfo}>
                   {author.avatar_urls && (
-                    <img
-                      src={author.avatar_urls["48"]}
-                      alt={author.name}
-                      className="w-12 h-12 rounded-full"
-                    />
+                    <Link href={`/authors/${author.slug}`}>
+                      <img
+                        src={author.avatar_urls["48"]}
+                        alt={author.name}
+                        className={styles.avatar}
+                      />
+                    </Link>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">{author.name}</p>
-                    <time
-                      dateTime={post.date}
-                      className="text-sm text-gray-500"
+                    <Link
+                      href={`/authors/${author.slug}`}
+                      className={styles.authorLink}
                     >
+                      <p className={styles.authorName}>{author.name}</p>
+                    </Link>
+                    <time dateTime={post.date} className={styles.date}>
                       {date}
                     </time>
                   </div>
@@ -106,24 +208,19 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
 
             {/* Content */}
-            <div
-              className="prose prose-lg max-w-none prose-headings:font-bold prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg"
-              dangerouslySetInnerHTML={{ __html: post.content.rendered }}
-            />
+            <PostContent content={post.content.rendered} />
+
+            {/* Share Buttons */}
+            <ShareButtons title={post.title.rendered} url={fullUrl} />
 
             {/* Tags */}
             {post._embedded?.["wp:term"]?.[1] &&
               post._embedded["wp:term"][1].length > 0 && (
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                    Tags
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {post._embedded["wp:term"][1].map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
-                      >
+                <div className={styles.tags}>
+                  <h3 className={styles.tagsTitle}>Tags</h3>
+                  <div className={styles.tagsList}>
+                    {post._embedded["wp:term"][1].map((tag: any) => (
+                      <span key={tag.id} className={styles.tag}>
                         {tag.name}
                       </span>
                     ))}
@@ -135,12 +232,10 @@ export default async function PostPage({ params }: PostPageProps) {
 
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              Related Posts
-            </h2>
-            <div className="grid grid-cols-1 gap-6">
-              {relatedPosts.map((relatedPost) => (
+          <div className={styles.relatedSection}>
+            <h2 className={styles.relatedTitle}>Related Posts</h2>
+            <div className={styles.relatedGrid}>
+              {relatedPosts.map((relatedPost: any) => (
                 <PostCard key={relatedPost.id} post={relatedPost} />
               ))}
             </div>
@@ -148,14 +243,7 @@ export default async function PostPage({ params }: PostPageProps) {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} My Blog. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

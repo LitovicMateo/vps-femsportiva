@@ -1,12 +1,51 @@
-import { fetchPostsByCategory } from "@/lib/wordpress";
+import { fetchPostsByCategoryAPI } from "@/lib/api";
 import PostCard from "@/components/PostCard";
 import Pagination from "@/components/Pagination";
+import Footer from "@/components/Footer";
+import StructuredData from "@/components/StructuredData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import styles from "./page.module.css";
+import type { Metadata } from "next";
+
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
   params: { category: string };
   searchParams: { page?: string };
+}
+
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const data = await fetchPostsByCategoryAPI(resolvedParams.category, 1, 1);
+  const category = data.category;
+
+  if (!category) {
+    return {
+      title: "Category Not Found",
+    };
+  }
+
+  const description =
+    category.description || `Browse all posts in the ${category.name} category`;
+
+  return {
+    title: category.name,
+    description: description,
+    openGraph: {
+      title: category.name,
+      description: description,
+      type: "website",
+      url: `/${resolvedParams.category}`,
+    },
+    twitter: {
+      card: "summary",
+      title: category.name,
+      description: description,
+    },
+  };
 }
 
 export default async function CategoryPage({
@@ -18,48 +57,69 @@ export default async function CategoryPage({
   const currentPage = parseInt(resolvedSearchParams.page || "1");
   const perPage = 10;
 
-  const { posts, total, totalPages, category } = await fetchPostsByCategory(
+  const data = await fetchPostsByCategoryAPI(
     resolvedParams.category,
     currentPage,
-    perPage
+    perPage,
   );
+
+  const posts = data.posts || [];
+  const category = data.category;
+  const total = data.pagination?.total || 0;
+  const totalPages = data.pagination?.totalPages || 0;
 
   if (!category) {
     notFound();
   }
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: category.name,
+    description:
+      category.description ||
+      `Browse all posts in the ${category.name} category`,
+    url: `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: total,
+      itemListElement: posts.map((post: any, index: number) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}/${post.slug}`,
+        name: post.title,
+      })),
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
+      <StructuredData data={structuredData} />
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link
-            href="/"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
-          >
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <Link href="/" className={styles.backLink}>
             ← Back to Home
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900">{category.name}</h1>
+          <h1 className={styles.title}>{category.name}</h1>
           {category.description && (
-            <p className="mt-2 text-gray-600">{category.description}</p>
+            <p className={styles.description}>{category.description}</p>
           )}
-          <p className="mt-2 text-sm text-gray-500">
+          <p className={styles.postCount}>
             {total} {total === 1 ? "post" : "posts"}
           </p>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className={styles.main}>
         {posts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              No posts found in this category.
-            </p>
+          <div className={styles.empty}>
+            <p className={styles.emptyText}>No posts found in this category.</p>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-6">
-              {posts.map((post) => (
+            <div className={styles.postsGrid}>
+              {posts.map((post: any) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
@@ -73,14 +133,7 @@ export default async function CategoryPage({
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} My Blog. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,13 +1,25 @@
 import Link from "next/link";
 import { WP_REST_API_Post } from "@/types/wordpress";
+import styles from "./PostCard.module.css";
 
 interface PostCardProps {
   post: WP_REST_API_Post;
   featured?: boolean;
 }
 
+function slugifyAuthorName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/--+/g, "-")
+    .trim();
+}
+
 export default function PostCard({ post, featured = false }: PostCardProps) {
-  const author = post._embedded?.author?.[0]?.name || "Unknown";
+  const authorData = post._embedded?.author?.[0];
+  const author = authorData?.name || "Unknown";
+  const authorSlug = authorData?.slug || slugifyAuthorName(author);
   const date = new Date(post.date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -25,38 +37,40 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
 
   if (featured) {
     return (
-      <article className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+      <article className={`${styles.postCard} ${styles.featured}`}>
         {featuredImage && (
-          <div className="aspect-video w-full overflow-hidden">
-            <img
-              src={featuredImage}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
+          <div className={styles.featuredImage}>
+            <img src={featuredImage} alt={title} />
           </div>
         )}
-        <div className="p-6">
+        <div className={styles.featuredContent}>
           {primaryCategory && (
-            <Link
-              href={`/${categorySlug}`}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-800 uppercase tracking-wide"
-            >
+            <Link href={`/${categorySlug}`} className={styles.category}>
               {primaryCategory.name}
             </Link>
           )}
           <Link href={`/${categorySlug}/${post.slug}`}>
             <h2
-              className="text-2xl font-bold mt-2 mb-3 hover:text-blue-600 transition-colors"
+              className={styles.featuredTitle}
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </Link>
           <div
-            className="text-gray-600 mb-4 line-clamp-3"
+            className={`${styles.excerpt} line-clamp-3`}
             dangerouslySetInnerHTML={{ __html: excerpt }}
           />
-          <div className="flex items-center text-sm text-gray-500">
-            <span>{author}</span>
-            <span className="mx-2">•</span>
+          <div className={styles.meta}>
+            {authorData ? (
+              <Link
+                href={`/authors/${authorSlug}`}
+                className={styles.authorLink}
+              >
+                {author}
+              </Link>
+            ) : (
+              <span>{author}</span>
+            )}
+            <span>•</span>
             <time dateTime={post.date}>{date}</time>
           </div>
         </div>
@@ -65,38 +79,40 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
   }
 
   return (
-    <article className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
-      <div className="flex gap-4">
+    <article className={`${styles.postCard} ${styles.regular}`}>
+      <div className={styles.regularContent}>
         {featuredImage && (
           <Link
             href={`/${categorySlug}/${post.slug}`}
-            className="flex-shrink-0"
+            className={styles.thumbnail}
           >
-            <img
-              src={featuredImage}
-              alt={title}
-              className="w-32 h-24 object-cover rounded"
-            />
+            <img src={featuredImage} alt={title} />
           </Link>
         )}
-        <div className="flex-1">
+        <div className={styles.regularBody}>
           {primaryCategory && (
-            <Link
-              href={`/${categorySlug}`}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-800 uppercase tracking-wide"
-            >
+            <Link href={`/${categorySlug}`} className={styles.categorySmall}>
               {primaryCategory.name}
             </Link>
           )}
           <Link href={`/${categorySlug}/${post.slug}`}>
             <h3
-              className="text-lg font-semibold mt-1 mb-2 hover:text-blue-600 transition-colors"
+              className={styles.regularTitle}
               dangerouslySetInnerHTML={{ __html: title }}
             />
           </Link>
-          <div className="flex items-center text-sm text-gray-500">
-            <span>{author}</span>
-            <span className="mx-2">•</span>
+          <div className={styles.meta}>
+            {authorData ? (
+              <Link
+                href={`/authors/${authorSlug}`}
+                className={styles.authorLink}
+              >
+                {author}
+              </Link>
+            ) : (
+              <span>{author}</span>
+            )}
+            <span>•</span>
             <time dateTime={post.date}>{date}</time>
           </div>
         </div>

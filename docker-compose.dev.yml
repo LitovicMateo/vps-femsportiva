@@ -5,7 +5,7 @@ services:
     build:
       context: ./frontend
       target: builder
-    command: sh -lc "npm ci && npm run dev -- -H 0.0.0.0"
+    command: sh -c "npm ci && npm run dev -- -H 0.0.0.0"
     user: root
     volumes:
       - ./frontend:/app:delegated
@@ -16,7 +16,11 @@ services:
     environment:
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
       NODE_ENV: development
+      WATCHPACK_POLLING: "500"
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "500"
     depends_on:
       - wordpress
 

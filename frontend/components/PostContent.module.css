@@ -1,0 +1,28 @@
+.caption {
+  display: block;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Style for figure captions */
+:global(.prose figure) {
+  margin: 2rem 0;
+}
+
+:global(.prose figure img) {
+  margin-bottom: 0;
+}
+
+:global(.prose figcaption) {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.5;
+}

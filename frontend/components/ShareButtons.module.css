@@ -1,0 +1,127 @@
+.shareContainer {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.shareTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+.shareButtons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.shareButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  border: 1px solid #ddd;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.shareButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #0070f3;
+}
+
+.shareButton:active {
+  transform: translateY(0);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+/* Specific colors for each platform */
+.shareButton:nth-child(1):hover {
+  /* Twitter/X */
+  background: #000000;
+  color: white;
+  border-color: #000000;
+}
+
+.shareButton:nth-child(2):hover {
+  /* Facebook */
+  background: #1877f2;
+  color: white;
+  border-color: #1877f2;
+}
+
+.shareButton:nth-child(3):hover {
+  /* LinkedIn */
+  background: #0a66c2;
+  color: white;
+  border-color: #0a66c2;
+}
+
+.shareButton:nth-child(4):hover {
+  /* Reddit */
+  background: #ff4500;
+  color: white;
+  border-color: #ff4500;
+}
+
+.shareButton:nth-child(5):hover {
+  /* WhatsApp */
+  background: #25d366;
+  color: white;
+  border-color: #25d366;
+}
+
+.shareButton:nth-child(6):hover {
+  /* Telegram */
+  background: #0088cc;
+  color: white;
+  border-color: #0088cc;
+}
+
+.shareButton:nth-child(7):hover {
+  /* Email */
+  background: #ea4335;
+  color: white;
+  border-color: #ea4335;
+}
+
+.shareButton:nth-child(8):hover {
+  /* Copy Link */
+  background: #0070f3;
+  color: white;
+  border-color: #0070f3;
+}
+
+@media (max-width: 768px) {
+  .shareButtons {
+    gap: 0.75rem;
+  }
+
+  .shareButton {
+    width: 44px;
+    height: 44px;
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+}

@@ -1,4 +1,10 @@
-import { WP_REST_API_Post, WP_REST_API_Category } from "@/types/wordpress";
+import {
+  WP_REST_API_Post,
+  WP_REST_API_Category,
+  WP_REST_API_User,
+  WP_REST_API_Tag,
+  WP_REST_API_Page,
+} from "@/types/wordpress";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL || "http://wordpress/wp-json";
@@ -40,6 +46,7 @@ export async function fetchPosts(params?: {
   categories?: number;
   tags?: number;
   exclude?: number;
+  author?: number;
 }): Promise<{ posts: WP_REST_API_Post[]; total: number; totalPages: number }> {
   const queryParams = new URLSearchParams();
   queryParams.append("_embed", "true");
@@ -51,6 +58,7 @@ export async function fetchPosts(params?: {
     queryParams.append("categories", params.categories.toString());
   if (params?.tags) queryParams.append("tags", params.tags.toString());
   if (params?.exclude) queryParams.append("exclude", params.exclude.toString());
+  if (params?.author) queryParams.append("author", params.author.toString());
 
   const endpoint = `/wp/v2/posts?${queryParams.toString()}`;
   const urls: string[] = [];
@@ -59,7 +67,7 @@ export async function fetchPosts(params?: {
     : API_BASE.replace(/\/$/, "");
 
   urls.push(
-    `${root}/index.php?rest_route=/wp/v2/posts&${queryParams.toString()}`
+    `${root}/index.php?rest_route=/wp/v2/posts&${queryParams.toString()}`,
   );
   urls.push(`${root}/wp-json/wp/v2/posts?${queryParams.toString()}`);
   urls.push(`${API_BASE}/wp/v2/posts?${queryParams.toString()}`);
@@ -88,7 +96,7 @@ export async function fetchPosts(params?: {
  * Fetch a single post by slug
  */
 export async function fetchPostBySlug(
-  slug: string
+  slug: string,
 ): Promise<WP_REST_API_Post | null> {
   const endpoint = `/wp/v2/posts?slug=${slug}&_embed`;
   const data = await tryFetch<WP_REST_API_Post[]>(endpoint);
@@ -101,7 +109,7 @@ export async function fetchPostBySlug(
 export async function fetchPostsByCategory(
   categorySlug: string,
   page: number = 1,
-  perPage: number = 10
+  perPage: number = 10,
 ): Promise<{
   posts: WP_REST_API_Post[];
   total: number;
@@ -133,7 +141,7 @@ export async function fetchPostsByCategory(
 export async function fetchRelatedPosts(
   postId: number,
   tags: number[],
-  limit: number = 3
+  limit: number = 3,
 ): Promise<WP_REST_API_Post[]> {
   if (tags.length === 0) {
     // If no tags, just get recent posts
@@ -158,4 +166,170 @@ export async function fetchCategories(): Promise<WP_REST_API_Category[]> {
   const endpoint = `/wp/v2/categories?per_page=100`;
   const data = await tryFetch<WP_REST_API_Category[]>(endpoint);
   return data || [];
+}
+
+/**
+ * Fetch all authors who have published posts
+ */
+export async function fetchAuthors(): Promise<WP_REST_API_User[]> {
+  const endpoint = `/wp/v2/users?per_page=100&who=authors`;
+  const data = await tryFetch<WP_REST_API_User[]>(endpoint);
+  return data || [];
+}
+
+/**
+ * Fetch author by slug
+ */
+export async function fetchAuthorBySlug(
+  slug: string,
+): Promise<WP_REST_API_User | null> {
+  const endpoint = `/wp/v2/users?slug=${slug}`;
+  const data = await tryFetch<WP_REST_API_User[]>(endpoint);
+  return data && data.length > 0 ? data[0] : null;
+}
+
+/**
+ * Fetch posts by author
+ */
+export async function fetchPostsByAuthor(
+  authorId: number,
+  page: number = 1,
+  perPage: number = 10,
+): Promise<{
+  posts: WP_REST_API_Post[];
+  total: number;
+  totalPages: number;
+}> {
+  const result = await fetchPosts({
+    author: authorId,
+    page,
+    perPage,
+  });
+
+  return result;
+}
+
+/**
+ * Fetch all tags
+ */
+export async function fetchTags(): Promise<WP_REST_API_Tag[]> {
+  const endpoint = `/wp/v2/tags?per_page=100`;
+  const data = await tryFetch<WP_REST_API_Tag[]>(endpoint);
+  return data || [];
+}
+
+/**
+ * Fetch tag by slug
+ */
+export async function fetchTagBySlug(
+  slug: string,
+): Promise<WP_REST_API_Tag | null> {
+  const endpoint = `/wp/v2/tags?slug=${slug}`;
+  const data = await tryFetch<WP_REST_API_Tag[]>(endpoint);
+  return data && data.length > 0 ? data[0] : null;
+}
+
+/**
+ * Fetch posts by tag slug
+ */
+export async function fetchPostsByTag(
+  tagSlug: string,
+  page: number = 1,
+  perPage: number = 10,
+): Promise<{
+  posts: WP_REST_API_Post[];
+  total: number;
+  totalPages: number;
+  tag: WP_REST_API_Tag | null;
+}> {
+  // First, get the tag by slug
+  const tagEndpoint = `/wp/v2/tags?slug=${tagSlug}`;
+  const tags = await tryFetch<WP_REST_API_Tag[]>(tagEndpoint);
+  const tag = tags && tags.length > 0 ? tags[0] : null;
+
+  if (!tag) {
+    return { posts: [], total: 0, totalPages: 0, tag: null };
+  }
+
+  // Then fetch posts with that tag
+  const result = await fetchPosts({
+    tags: tag.id,
+    page,
+    perPage,
+  });
+
+  return { ...result, tag };
+}
+
+/**
+ * Fetch all pages
+ */
+export async function fetchPages(params?: {
+  perPage?: number;
+  page?: number;
+}): Promise<{ pages: WP_REST_API_Page[]; total: number; totalPages: number }> {
+  const queryParams = new URLSearchParams();
+  queryParams.append("_embed", "true");
+
+  if (params?.perPage)
+    queryParams.append("per_page", params.perPage.toString());
+  if (params?.page) queryParams.append("page", params.page.toString());
+
+  const endpoint = `/wp/v2/pages?${queryParams.toString()}`;
+  const urls: string[] = [];
+  const root = /\/wp-json\/?$/.test(API_BASE)
+    ? API_BASE.replace(/\/wp-json\/?$/, "")
+    : API_BASE.replace(/\/$/, "");
+
+  urls.push(
+    `${root}/index.php?rest_route=/wp/v2/pages&${queryParams.toString()}`,
+  );
+  urls.push(`${root}/wp-json/wp/v2/pages?${queryParams.toString()}`);
+  urls.push(`${API_BASE}/wp/v2/pages?${queryParams.toString()}`);
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) continue;
+
+      const pages = await res.json();
+      const total = parseInt(res.headers.get("X-WP-Total") || "0");
+      const totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "1");
+
+      if (Array.isArray(pages)) {
+        return { pages, total, totalPages };
+      }
+    } catch (e) {
+      // Try next URL
+    }
+  }
+
+  return { pages: [], total: 0, totalPages: 0 };
+}
+
+/**
+ * Fetch a single page by slug
+ */
+export async function fetchPageBySlug(
+  slug: string,
+): Promise<WP_REST_API_Page | null> {
+  const endpoint = `/wp/v2/pages?slug=${slug}&_embed`;
+  const data = await tryFetch<WP_REST_API_Page[]>(endpoint);
+  return data && data.length > 0 ? data[0] : null;
+}
+
+/**
+ * Fetch site settings and metadata
+ */
+export async function fetchSiteInfo(): Promise<{
+  name: string;
+  description: string;
+  url: string;
+  home: string;
+  gmt_offset: number;
+  timezone_string: string;
+} | null> {
+  const endpoint = `/`;
+  const data = await tryFetch<any>(endpoint);
+  return data || null;
 }

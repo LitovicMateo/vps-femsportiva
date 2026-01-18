@@ -1,4 +1,5 @@
 import Link from "next/link";
+import styles from "./Pagination.module.css";
 
 interface PaginationProps {
   currentPage: number;
@@ -47,26 +48,23 @@ export default function Pagination({
   });
 
   return (
-    <nav className="flex items-center justify-center gap-2 mt-8">
+    <nav className={styles.pagination}>
       {currentPage > 1 && (
         <Link
           href={`${basePath}${
             currentPage === 2 ? "" : `?page=${currentPage - 1}`
           }`}
-          className="px-4 py-2 rounded bg-white border border-gray-300 hover:bg-gray-50 text-sm font-medium"
+          className={styles.button}
         >
           Previous
         </Link>
       )}
 
-      <div className="flex gap-1">
+      <div className={styles.pages}>
         {uniquePages.map((page, index) => {
           if (page === "...") {
             return (
-              <span
-                key={`ellipsis-${index}`}
-                className="px-3 py-2 text-gray-400"
-              >
+              <span key={`ellipsis-${index}`} className={styles.ellipsis}>
                 ...
               </span>
             );
@@ -79,10 +77,8 @@ export default function Pagination({
             <Link
               key={pageNum}
               href={`${basePath}${pageNum === 1 ? "" : `?page=${pageNum}`}`}
-              className={`px-4 py-2 rounded text-sm font-medium ${
-                isActive
-                  ? "bg-blue-600 text-white"
-                  : "bg-white border border-gray-300 hover:bg-gray-50"
+              className={`${styles.pageButton} ${
+                isActive ? styles.active : styles.inactive
               }`}
             >
               {pageNum}
@@ -94,7 +90,7 @@ export default function Pagination({
       {currentPage < totalPages && (
         <Link
           href={`${basePath}?page=${currentPage + 1}`}
-          className="px-4 py-2 rounded bg-white border border-gray-300 hover:bg-gray-50 text-sm font-medium"
+          className={styles.button}
         >
           Next
         </Link>
