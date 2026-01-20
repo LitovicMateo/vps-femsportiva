@@ -157,6 +157,16 @@
   color: #666;
   font-size: 0.875rem;
   border-radius: 9999px;
+  text-decoration: none;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+  cursor: pointer;
+}
+
+.tag:hover {
+  background: #0066cc;
+  color: #ffffff;
 }
 
 .relatedSection {

@@ -19,8 +19,14 @@ services:
         define('WP_ENVIRONMENT_TYPE', '${ENVIRONMENT}');
         define('WP_HOME', '${WORDPRESS_URL}');
         define('WP_SITEURL', '${WORDPRESS_URL}');
+        @ini_set('upload_max_filesize', '2000M');
+        @ini_set('post_max_size', '2000M');
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '600');
+        @ini_set('max_input_time', '600');
     volumes:
       - ./data/uploads:/var/www/html/wp-content/uploads
+      - ./data/ai1wm-unlimited.php:/var/www/html/wp-content/mu-plugins/ai1wm-unlimited.php:ro
       - wordpress_data:/var/www/html
 
   database:

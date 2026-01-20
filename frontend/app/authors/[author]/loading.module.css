@@ -1,0 +1,262 @@
+.container {
+  min-height: 100vh;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.headerContent {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+}
+
+.backLinkSkeleton {
+  width: 120px;
+  height: 18px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.authorCard {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.authorAvatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.authorDetails {
+  flex: 1;
+}
+
+.authorName {
+  width: 200px;
+  height: 32px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.authorBio {
+  height: 18px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.authorBioShort {
+  width: 70%;
+}
+
+.postCountSkeleton {
+  width: 180px;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  width: 100%;
+  flex: 1;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.postCard {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.postImage {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #e5e7eb;
+  position: relative;
+  overflow: hidden;
+}
+
+.postContent {
+  padding: 1.5rem;
+}
+
+.categoryBadge {
+  width: 80px;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.postTitle {
+  margin-bottom: 1rem;
+}
+
+.titleLine {
+  height: 24px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.titleLineShort {
+  width: 70%;
+}
+
+.excerpt {
+  margin-bottom: 1rem;
+}
+
+.excerptLine {
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.excerptLineShort {
+  width: 60%;
+}
+
+.postMeta {
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.date {
+  width: 120px;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.paginationButton {
+  width: 40px;
+  height: 40px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer Animation */
+.shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main {
+    padding: 2rem 1rem;
+  }
+
+  .authorCard {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .authorAvatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .authorName {
+    width: 100%;
+  }
+
+  .authorBio,
+  .authorBioShort {
+    width: 100%;
+  }
+}
+
+@media (min-width: 640px) {
+  .headerContent {
+    padding: 1.5rem 1.5rem;
+  }
+
+  .main {
+    padding: 3rem 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .headerContent {
+    padding: 1.5rem 2rem;
+  }
+
+  .main {
+    padding: 3rem 2rem;
+  }
+}

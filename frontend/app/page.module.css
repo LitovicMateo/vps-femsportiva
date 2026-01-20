@@ -28,6 +28,46 @@
   margin-top: 0.5rem;
 }
 
+/* Section Styles */
+.recentNewsSection,
+.categorySection {
+  margin-bottom: 4rem;
+}
+
+.categorySection {
+  padding-top: 4rem;
+  border-top: 2px solid #e5e7eb;
+}
+
+.categorySection:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.sectionTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1a1a1a;
+}
+
+.categoryTitleLink {
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+}
+
+.categoryTitleLink:hover {
+  color: #0070f3;
+}
+
+.postsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Legacy grid styles - kept for backwards compatibility */
 .grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -64,6 +104,63 @@
   color: #666;
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.paginationButton {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.paginationButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginationButtonActive {
+  background: #0070f3;
+  border-color: #0070f3;
+  color: #ffffff;
+}
+
+.paginationButtonActive:hover {
+  background: #0060df;
+  border-color: #0060df;
+}
+
+.paginationEllipsis {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 0.875rem;
 }
 
 @media (min-width: 1024px) {

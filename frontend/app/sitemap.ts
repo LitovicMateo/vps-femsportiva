@@ -11,7 +11,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch all data in parallel
   const [postsData, categories, authors, pagesData] = await Promise.all([
-    fetchPosts({ perPage: 100 }).catch(() => ({ posts: [], total: 0, totalPages: 0 })),
+    fetchPosts({ perPage: 100 }).catch(() => ({
+      posts: [],
+      total: 0,
+      totalPages: 0,
+    })),
     fetchCategories().catch(() => []),
     fetchAuthors().catch(() => []),
     fetchPages().catch(() => ({ pages: [], total: 0, totalPages: 0 })),
@@ -39,12 +43,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Categories
-  const categoryUrls: MetadataRoute.Sitemap = categories.map((category: any) => ({
-    url: `${baseUrl}/${category.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.6,
-  }));
+  const categoryUrls: MetadataRoute.Sitemap = categories.map(
+    (category: any) => ({
+      url: `${baseUrl}/${category.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }),
+  );
 
   // Authors
   const authorUrls: MetadataRoute.Sitemap = authors.map((author: any) => ({

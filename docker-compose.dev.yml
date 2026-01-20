@@ -2,15 +2,13 @@ version: "3.8"
 
 services:
   frontend:
-    build:
-      context: ./frontend
-      target: builder
+    image: node:20-alpine
+    working_dir: /app
     command: sh -c "npm ci && npm run dev -- -H 0.0.0.0"
-    user: root
     volumes:
-      - ./frontend:/app:delegated
-      - node_modules:/app/node_modules
-      - nextjs_build:/app/.next
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
     ports:
       - "3000:3000"
     environment:
@@ -18,9 +16,8 @@ services:
       NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
       NODE_ENV: development
-      WATCHPACK_POLLING: "500"
+      WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
-      CHOKIDAR_INTERVAL: "500"
     depends_on:
       - wordpress
 
@@ -28,12 +25,10 @@ services:
     restart: "no"
     ports:
       - "8080:80" # Expose WordPress directly (no Nginx)
+    volumes:
+      - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
     environment:
       WORDPRESS_DEBUG: "1"
 
   database:
     restart: "no"
-
-volumes:
-  node_modules:
-  nextjs_build:

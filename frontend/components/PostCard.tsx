@@ -35,6 +35,12 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
   // Get category slug for URL
   const categorySlug = primaryCategory?.slug || "uncategorized";
 
+  // Get top 3 tags sorted by post count
+  const allTags = post._embedded?.["wp:term"]?.[1] || [];
+  const topTags = allTags
+    .sort((a: any, b: any) => b.count - a.count)
+    .slice(0, 3);
+
   if (featured) {
     return (
       <article className={`${styles.postCard} ${styles.featured}`}>
@@ -73,6 +79,19 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             <span>•</span>
             <time dateTime={post.date}>{date}</time>
           </div>
+          {topTags.length > 0 && (
+            <div className={styles.tags}>
+              {topTags.map((tag: any) => (
+                <Link
+                  key={tag.id}
+                  href={`/tags/${tag.slug}`}
+                  className={styles.tag}
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </article>
     );
@@ -115,6 +134,19 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             <span>•</span>
             <time dateTime={post.date}>{date}</time>
           </div>
+          {topTags.length > 0 && (
+            <div className={styles.tags}>
+              {topTags.map((tag: any) => (
+                <Link
+                  key={tag.id}
+                  href={`/tags/${tag.slug}`}
+                  className={styles.tag}
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </article>

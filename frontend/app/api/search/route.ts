@@ -29,48 +29,39 @@ export async function GET(request: NextRequest) {
     }
 
     // Build WordPress search endpoint
-    const root = /\/wp-json\/?$/.test(API_BASE)
-      ? API_BASE.replace(/\/wp-json\/?$/, "")
-      : API_BASE.replace(/\/$/, "");
-
     const queryParams = new URLSearchParams({
       search: query,
       per_page: perPage.toString(),
       page: page.toString(),
-      _embed: "true",
     });
 
+    // WordPress search endpoint uses 'subtype' not 'type' for filtering
     if (type !== "any") {
-      queryParams.append("type", type);
+      queryParams.append("subtype", type);
     }
 
-    // Try multiple URL patterns for WordPress search
-    const urls = [
-      `${root}/index.php?rest_route=/wp/v2/search&${queryParams.toString()}`,
-      `${root}/wp-json/wp/v2/search?${queryParams.toString()}`,
-      `${API_BASE}/wp/v2/search?${queryParams.toString()}`,
-    ];
+    // Construct the full search URL
+    const searchUrl = `${API_BASE}/wp/v2/search?${queryParams.toString()}`;
 
     let results = null;
     let total = 0;
     let totalPages = 1;
 
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) continue;
+    try {
+      const res = await fetch(searchUrl, { cache: "no-store" });
 
-        results = await res.json();
-        total = parseInt(res.headers.get("X-WP-Total") || "0");
-        totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "1");
-
-        if (Array.isArray(results)) {
-          break;
-        }
-      } catch (e) {
-        // Try next URL
-        continue;
+      if (!res.ok) {
+        console.error("WordPress search failed with status:", res.status);
+        throw new Error(`WordPress API returned status ${res.status}`);
       }
+
+      results = await res.json();
+      total = parseInt(res.headers.get("X-WP-Total") || "0");
+      totalPages = parseInt(res.headers.get("X-WP-TotalPages") || "1");
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+      // Return empty results instead of throwing
+      results = [];
     }
 
     if (!results || !Array.isArray(results)) {
@@ -87,19 +78,38 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Format search results
-    const formattedResults = results.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      type: item.type || item.subtype,
-      url: item.url,
-      excerpt: item.excerpt || "",
-    }));
+    // Fetch full post details for each search result to get embedded data (author, categories, etc.)
+    const detailedResults = await Promise.all(
+      results.map(async (item: any) => {
+        try {
+          // Fetch full post data with embedded resources
+          const postUrl = `${API_BASE}/wp/v2/posts/${item.id}?_embed`;
+          const postRes = await fetch(postUrl, { cache: "no-store" });
+
+          if (postRes.ok) {
+            const postData = await postRes.json();
+            return postData;
+          }
+        } catch (error) {
+          console.error(`Error fetching post ${item.id}:`, error);
+        }
+
+        // Fallback to basic search result if full post fetch fails
+        return {
+          id: item.id,
+          title: { rendered: item.title },
+          excerpt: { rendered: item.excerpt || "" },
+          url: item.url,
+          date: new Date().toISOString(),
+          _embedded: {},
+        };
+      }),
+    );
 
     return NextResponse.json({
       success: true,
       query: query,
-      results: formattedResults,
+      results: detailedResults,
       total: total,
       pagination: {
         total: total,

@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaYoutube } from 'react-icons/fa';
-import { HiMenu, HiX } from 'react-icons/hi';
-import styles from './Header.module.css';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedinIn,
+  FaYoutube,
+  FaSearch,
+} from "react-icons/fa";
+import { HiMenu, HiX } from "react-icons/hi";
+import styles from "./Header.module.css";
 
 interface Category {
   id: number;
@@ -19,13 +27,15 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Sort categories by post count
   const sortedCategories = [...categories].sort((a, b) => b.count - a.count);
-  
+
   // Show first 4 categories in nav, rest in dropdown
   const visibleCategories = sortedCategories.slice(0, 4);
   const dropdownCategories = sortedCategories.slice(4);
@@ -34,27 +44,27 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
   }, [isMenuOpen]);
 
   const socialLinks = [
-    { icon: FaFacebookF, url: 'https://facebook.com', label: 'Facebook' },
-    { icon: FaTwitter, url: 'https://twitter.com', label: 'Twitter' },
-    { icon: FaInstagram, url: 'https://instagram.com', label: 'Instagram' },
-    { icon: FaLinkedinIn, url: 'https://linkedin.com', label: 'LinkedIn' },
-    { icon: FaYoutube, url: 'https://youtube.com', label: 'YouTube' },
+    { icon: FaFacebookF, url: "https://facebook.com", label: "Facebook" },
+    { icon: FaTwitter, url: "https://twitter.com", label: "Twitter" },
+    { icon: FaInstagram, url: "https://instagram.com", label: "Instagram" },
+    { icon: FaLinkedinIn, url: "https://linkedin.com", label: "LinkedIn" },
+    { icon: FaYoutube, url: "https://youtube.com", label: "YouTube" },
   ];
 
   const toggleMenu = () => {
@@ -67,15 +77,22 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
     setIsDropdownOpen(false);
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchTerm.trim();
+    if (query.length >= 3) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+      setSearchTerm("");
+      closeMenu();
+    }
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
         {/* Logo/Brand */}
         <Link href="/" className={styles.brand} onClick={closeMenu}>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             My Blog
           </motion.div>
         </Link>
@@ -86,12 +103,12 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
             <Link href="/" className={styles.navLink}>
               <motion.span
                 whileHover={{ y: -2 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+                transition={{ type: "spring", stiffness: 300 }}
               >
                 Home
               </motion.span>
             </Link>
-            
+
             {visibleCategories.map((category) => (
               <Link
                 key={category.id}
@@ -100,15 +117,15 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
               >
                 <motion.span
                   whileHover={{ y: -2 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {category.name}
                 </motion.span>
               </Link>
             ))}
-            
+
             {dropdownCategories.length > 0 && (
-              <div 
+              <div
                 className={styles.dropdown}
                 onMouseEnter={() => setIsDropdownOpen(true)}
                 onMouseLeave={() => setIsDropdownOpen(false)}
@@ -116,12 +133,12 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
                 <button className={styles.dropdownToggle}>
                   <motion.span
                     whileHover={{ y: -2 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
+                    transition={{ type: "spring", stiffness: 300 }}
                   >
                     More
                   </motion.span>
                 </button>
-                
+
                 <AnimatePresence>
                   {isDropdownOpen && (
                     <motion.div
@@ -146,6 +163,28 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
               </div>
             )}
           </nav>
+        )}
+
+        {/* Search Form */}
+        {!isMobile && (
+          <form onSubmit={handleSearch} className={styles.searchForm}>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={styles.searchInput}
+              aria-label="Search"
+            />
+            <button
+              type="submit"
+              className={styles.searchButton}
+              disabled={searchTerm.trim().length < 3}
+              aria-label="Search"
+            >
+              <FaSearch />
+            </button>
+          </form>
         )}
 
         {/* Social Icons */}
@@ -194,16 +233,42 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
             />
             <motion.div
               className={styles.mobileMenu}
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
             >
+              {/* Mobile Search Form */}
+              <div className={styles.mobileSearchContainer}>
+                <form onSubmit={handleSearch} className={styles.searchForm}>
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={styles.searchInput}
+                    aria-label="Search"
+                  />
+                  <button
+                    type="submit"
+                    className={styles.searchButton}
+                    disabled={searchTerm.trim().length < 3}
+                    aria-label="Search"
+                  >
+                    <FaSearch />
+                  </button>
+                </form>
+              </div>
+
               <nav className={styles.mobileNav}>
-                <Link href="/" className={styles.mobileNavLink} onClick={closeMenu}>
+                <Link
+                  href="/"
+                  className={styles.mobileNavLink}
+                  onClick={closeMenu}
+                >
                   Home
                 </Link>
-                
+
                 {sortedCategories.map((category) => (
                   <Link
                     key={category.id}

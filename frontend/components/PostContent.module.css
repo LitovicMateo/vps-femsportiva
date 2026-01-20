@@ -16,6 +16,17 @@
 
 :global(.prose figure img) {
   margin-bottom: 0;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ensure all images within prose content respect max-width */
+:global(.prose img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 :global(.prose figcaption) {

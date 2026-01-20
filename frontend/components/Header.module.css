@@ -105,13 +105,68 @@
   padding: 0.75rem 1.25rem;
   color: #333;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   font-size: 0.95rem;
 }
 
 .dropdownItem:hover {
   background-color: #f5f5f5;
   color: #0066cc;
+}
+
+/* Search Form */
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f5f5f5;
+  border-radius: 24px;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.searchForm:focus-within {
+  background: #ebebeb;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: #333;
+  min-width: 180px;
+  padding: 0.25rem 0;
+}
+
+.searchInput::placeholder {
+  color: #999;
+}
+
+.searchButton {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+  font-size: 1rem;
+}
+
+.searchButton:hover:not(:disabled) {
+  color: #0066cc;
+}
+
+.searchButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Social Icons */
@@ -131,7 +186,9 @@
   color: #666;
   background: #f5f5f5;
   text-decoration: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .socialIcon:hover {
@@ -175,6 +232,11 @@
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
 }
 
+.mobileSearchContainer {
+  padding: 2rem 2rem 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
 .mobileNav {
   padding: 2rem 0;
 }
@@ -186,7 +248,9 @@
   text-decoration: none;
   font-weight: 500;
   font-size: 1.1rem;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   border-left: 3px solid transparent;
 }
 
@@ -215,7 +279,9 @@
   color: #666;
   background: #f5f5f5;
   text-decoration: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   font-size: 1.25rem;
 }
 
@@ -232,7 +298,8 @@
   }
 
   .nav,
-  .socialIcons {
+  .socialIcons,
+  .searchForm {
     display: none;
   }
 

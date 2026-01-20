@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Authors",
@@ -63,16 +63,18 @@ export default async function AuthorsPage() {
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: activeAuthors.length,
-      itemListElement: activeAuthors.map(({ author, postCount }: any, index: number) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        item: {
-          "@type": "Person",
-          name: author.name,
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${author.slug}`,
-          image: author.avatar_urls ? author.avatar_urls["96"] : undefined,
-        },
-      })),
+      itemListElement: activeAuthors.map(
+        ({ author, postCount }: any, index: number) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Person",
+            name: author.name,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${author.slug}`,
+            image: author.avatar_urls ? author.avatar_urls["96"] : undefined,
+          },
+        }),
+      ),
     },
   };
 

@@ -8,7 +8,7 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface CategoryPageProps {
   params: { category: string };

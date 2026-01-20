@@ -1,0 +1,288 @@
+.container {
+  min-height: 100vh;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.headerContent {
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem;
+}
+
+.backLinkSkeleton {
+  width: 150px;
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.main {
+  max-width: 896px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  width: 100%;
+  flex: 1;
+}
+
+.article {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Featured Image Skeleton */
+.featuredImageSkeleton {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+  background: #e5e7eb;
+  position: relative;
+}
+
+/* Content Area */
+.content {
+  padding: 2rem;
+}
+
+/* Category Badge Skeleton */
+.categoryBadgeSkeleton {
+  width: 120px;
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Title Skeleton */
+.titleSkeleton {
+  margin-bottom: 1.5rem;
+}
+
+.titleLine {
+  height: 36px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.titleLineShort {
+  width: 65%;
+}
+
+/* Meta Skeleton */
+.metaSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.authorInfoSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatarSkeleton {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  position: relative;
+  overflow: hidden;
+}
+
+.authorDetailsSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.authorNameSkeleton {
+  width: 120px;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dateSkeleton {
+  width: 100px;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Content Skeleton */
+.contentSkeleton {
+  margin-bottom: 2rem;
+}
+
+.paragraphSkeleton {
+  margin-bottom: 1.5rem;
+}
+
+.line {
+  height: 18px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.lineShort {
+  width: 75%;
+}
+
+/* Share Buttons Skeleton */
+.shareButtonsSkeleton {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.shareButton {
+  width: 100px;
+  height: 40px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Related Posts Skeleton */
+.relatedSkeleton {
+  margin-top: 4rem;
+}
+
+.relatedTitleSkeleton {
+  width: 200px;
+  height: 28px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.relatedCard {
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.relatedImage {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #e5e7eb;
+  position: relative;
+  overflow: hidden;
+}
+
+.relatedCardContent {
+  padding: 1.5rem;
+}
+
+.relatedCategory {
+  width: 80px;
+  height: 16px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.relatedCardTitle {
+  height: 20px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.relatedCardTitleShort {
+  width: 60%;
+}
+
+.relatedMeta {
+  width: 100px;
+  height: 14px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer Animation */
+.shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.5) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .main {
+    padding: 2rem 1rem;
+  }
+
+  .content {
+    padding: 1.5rem;
+  }
+
+  .titleLine {
+    height: 28px;
+  }
+
+  .relatedGrid {
+    grid-template-columns: 1fr;
+  }
+}

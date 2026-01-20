@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface PostPageProps {
   params: { category: string; slug: string };
@@ -220,9 +220,13 @@ export default async function PostPage({ params }: PostPageProps) {
                   <h3 className={styles.tagsTitle}>Tags</h3>
                   <div className={styles.tagsList}>
                     {post._embedded["wp:term"][1].map((tag: any) => (
-                      <span key={tag.id} className={styles.tag}>
+                      <Link
+                        key={tag.id}
+                        href={`/tags/${tag.slug}`}
+                        className={styles.tag}
+                      >
                         {tag.name}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </div>

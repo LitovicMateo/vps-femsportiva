@@ -3,6 +3,8 @@ version: "3.8"
 services:
   wordpress:
     restart: unless-stopped
+    volumes:
+      - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
     environment:
       WORDPRESS_DEBUG: "0"
     healthcheck:
