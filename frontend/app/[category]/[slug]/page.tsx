@@ -5,7 +5,11 @@ import StructuredData from "@/components/StructuredData";
 import PostContent from "@/components/PostContent";
 import ShareButtons from "@/components/ShareButtons";
 import ViewCounter from "@/components/ViewCounter";
-import { calculateReadingTime, formatCompactNumber } from "@/lib/utils";
+import {
+  calculateReadingTime,
+  formatCompactNumber,
+  transformWordPressUrl,
+} from "@/lib/utils";
 import { FaClock, FaEye } from "react-icons/fa";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -35,8 +39,9 @@ export async function generateMetadata({
     (cat: any) => cat.slug === resolvedParams.category,
   );
   const author = post._embedded?.author?.[0];
-  const featuredImage =
-    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || null;
+  const featuredImage = transformWordPressUrl(
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
+  );
 
   // Extract plain text from HTML content for description
   const plainText = post.excerpt.rendered.replace(/<[^>]*>/g, "").trim();
@@ -90,8 +95,9 @@ export default async function PostPage({ params }: PostPageProps) {
   }
 
   const author = post._embedded?.author?.[0];
-  const featuredImage =
-    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || null;
+  const featuredImage = transformWordPressUrl(
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
+  );
   const tags = post.tags || [];
 
   // Calculate reading time

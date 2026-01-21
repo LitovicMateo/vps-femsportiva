@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { WP_REST_API_Post } from "@/types/wordpress";
-import { calculateReadingTime, formatCompactNumber } from "@/lib/utils";
+import {
+  calculateReadingTime,
+  formatCompactNumber,
+  transformWordPressUrl,
+} from "@/lib/utils";
 import { FaClock, FaEye } from "react-icons/fa";
 import styles from "./PostCard.module.css";
 
@@ -29,8 +33,9 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
   });
   const title = post.title?.rendered || `Post ${post.id}`;
   const excerpt = post.excerpt?.rendered || "";
-  const featuredImage =
-    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || null;
+  const featuredImage = transformWordPressUrl(
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
+  );
   const categories = post._embedded?.["wp:term"]?.[0] || [];
   const primaryCategory = categories[0];
 
@@ -64,7 +69,10 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               {primaryCategory.name}
             </Link>
           )}
-          <Link href={`/${categorySlug}/${post.slug}`} className={styles.titleLink}>
+          <Link
+            href={`/${categorySlug}/${post.slug}`}
+            className={styles.titleLink}
+          >
             <h2
               className={styles.featuredTitle}
               dangerouslySetInnerHTML={{ __html: title }}
@@ -135,7 +143,10 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               {primaryCategory.name}
             </Link>
           )}
-          <Link href={`/${categorySlug}/${post.slug}`} className={styles.titleLink}>
+          <Link
+            href={`/${categorySlug}/${post.slug}`}
+            className={styles.titleLink}
+          >
             <h3
               className={styles.regularTitle}
               dangerouslySetInnerHTML={{ __html: title }}

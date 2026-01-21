@@ -56,3 +56,31 @@ export function formatCompactNumber(num: number): string {
   if (num < 1000000) return `${(num / 1000).toFixed(1)}K`;
   return `${(num / 1000000).toFixed(1)}M`;
 }
+
+/**
+ * Transform internal WordPress URLs to external client-accessible URLs
+ * @param url URL that might be internal (http://wordpress)
+ * @returns External URL accessible from browser
+ */
+export function transformWordPressUrl(
+  url: string | null | undefined,
+): string | null {
+  if (!url) return null;
+
+  // Use NEXT_PUBLIC_WORDPRESS_URL which is available on both server and client
+  // This is set in .env files for each environment
+  const externalUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL;
+  const pathPrefix = process.env.NEXT_PUBLIC_WORDPRESS_PATH_PREFIX || "";
+  
+  if (!externalUrl) {
+    console.error("NEXT_PUBLIC_WORDPRESS_URL is not defined");
+    return url;
+  }
+  
+  // Replace http://wordpress/wp/ with the external URL + path prefix
+  // Dev: http://wordpress/wp/wp-content -> http://localhost:8080/wp-content (no prefix)
+  // Staging/Prod: http://wordpress/wp/wp-content -> http://localhost:8081/wp/wp-content (with /wp prefix)
+  return url
+    .replace("http://wordpress/wp/", `${externalUrl}${pathPrefix}/`)
+    .replace("http://wordpress/", `${externalUrl}${pathPrefix}/`);
+}

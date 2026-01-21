@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { WP_REST_API_Post } from "@/types/wordpress";
+import { transformWordPressUrl } from "@/lib/utils";
 import styles from "./HeroSection.module.css";
 
 interface HeroSectionProps {
@@ -8,7 +9,9 @@ interface HeroSectionProps {
 }
 
 export default function HeroSection({ post }: HeroSectionProps) {
-  const featuredImage = post._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  const featuredImage = transformWordPressUrl(
+    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
+  );
   const category = post._embedded?.["wp:term"]?.[0]?.[0];
   const author = post._embedded?.author?.[0];
 

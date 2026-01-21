@@ -16,11 +16,11 @@ add_filter('pre_http_request', function($preempt, $args, $url) {
     
     // If the request is to our own WordPress REST API
     if (strpos($url, '/wp-json/') !== false && 
-        (strpos($url, 'localhost:8080') !== false || strpos($url, $site_url) !== false)) {
+        (strpos($url, 'wordpress') !== false || strpos($url, $site_url) !== false)) {
         
-        // Replace the external URL with internal localhost (no proxy, no port)
+        // Replace the external URL with internal WordPress service (Docker network)
         $internal_url = str_replace(
-            'http://localhost:8080/wp/wp-json/',
+            array($site_url . '/wp-json/', $home_url . '/wp-json/'),
             'http://localhost/wp-json/',
             $url
         );

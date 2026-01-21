@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { transformWordPressUrl } from "@/lib/utils";
 import styles from "./PostContent.module.css";
 
 interface PostContentProps {
@@ -8,6 +9,21 @@ interface PostContentProps {
 }
 
 export default function PostContent({ content }: PostContentProps) {
+  // Transform all WordPress internal URLs in the content to external URLs
+  const transformedContent = useMemo(() => {
+    // Use NEXT_PUBLIC_WORDPRESS_URL which is available on both server and client
+    const externalUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL;
+    const pathPrefix = process.env.NEXT_PUBLIC_WORDPRESS_PATH_PREFIX || "";
+    if (!externalUrl) {
+      console.error("NEXT_PUBLIC_WORDPRESS_URL is not defined");
+      return content;
+    }
+    // Transform URLs with environment-specific path prefix
+    return content
+      .replace(/http:\/\/wordpress\/wp\//g, `${externalUrl}${pathPrefix}/`)
+      .replace(/http:\/\/wordpress\//g, `${externalUrl}${pathPrefix}/`);
+  }, [content]);
+
   useEffect(() => {
     // Add captions to images after component mounts
     const figures = document.querySelectorAll(".prose figure");
@@ -50,7 +66,7 @@ export default function PostContent({ content }: PostContentProps) {
   return (
     <div
       className="prose prose-lg"
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: transformedContent }}
     />
   );
 }
