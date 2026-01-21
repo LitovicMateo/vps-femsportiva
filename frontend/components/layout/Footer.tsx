@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <p className={styles.content}>
-          © {new Date().getFullYear()} My Blog. All rights reserved.
+          © {new Date().getFullYear()} Moj Blog. Sva prava pridržana.
         </p>
       </div>
     </footer>

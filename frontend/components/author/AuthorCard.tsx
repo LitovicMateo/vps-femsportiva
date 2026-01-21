@@ -33,7 +33,7 @@ export default function AuthorCard({ author, postCount }: AuthorCardProps) {
           <h3 className={styles.name}>{author.name}</h3>
           {postCount !== undefined && (
             <p className={styles.meta}>
-              {postCount} {postCount === 1 ? "post" : "posts"}
+              {postCount} {postCount === 1 ? "objava" : "objava"}
             </p>
           )}
           {author.description && (

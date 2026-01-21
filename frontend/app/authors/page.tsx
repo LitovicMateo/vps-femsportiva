@@ -1,7 +1,7 @@
 import { fetchAuthorsAPI, fetchPostsAPI } from "@/lib/api";
-import AuthorCard from "@/components/AuthorCard";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
+import AuthorCard from "@/components/author/AuthorCard";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
@@ -9,18 +9,18 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Authors",
-  description: "Meet all the authors contributing to our blog",
+  title: "Autori",
+  description: "Upoznajte sve autore koji doprinose našem blogu",
   openGraph: {
-    title: "Authors",
-    description: "Meet all the authors contributing to our blog",
+    title: "Autori",
+    description: "Upoznajte sve autore koji doprinose našem blogu",
     type: "website",
     url: "/authors",
   },
   twitter: {
     card: "summary",
-    title: "Authors",
-    description: "Meet all the authors contributing to our blog",
+    title: "Autori",
+    description: "Upoznajte sve autore koji doprinose našem blogu",
   },
 };
 
@@ -57,8 +57,8 @@ export default async function AuthorsPage() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Authors",
-    description: "Meet all the authors contributing to our blog",
+    name: "Autori",
+    description: "Upoznajte sve autore koji doprinose našem blogu",
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors`,
     mainEntity: {
       "@type": "ItemList",
@@ -84,17 +84,17 @@ export default async function AuthorsPage() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Link href="/" className={styles.backLink}>
-            ← Back to Home
+            ← Povratak na početnu
           </Link>
-          <h1 className={styles.title}>Authors</h1>
-          <p className={styles.subtitle}>Meet the writers behind the stories</p>
+          <h1 className={styles.title}>Autori</h1>
+          <p className={styles.subtitle}>Upoznajte pisce iza priča</p>
         </div>
       </header>
 
       <main className={styles.main}>
         {activeAuthors.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No authors found.</p>
+            <p className={styles.emptyText}>Nema pronađenih autora.</p>
           </div>
         ) : (
           <div className={styles.grid}>

@@ -1,0 +1,36 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebarSection h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.aboutCard {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.aboutCard h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.aboutCard p {
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    order: -1;
+    margin-bottom: 2rem;
+  }
+}

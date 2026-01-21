@@ -4,12 +4,11 @@ import {
   fetchCategoriesAPI,
   fetchPostsByCategoryAPI,
 } from "@/lib/api";
-import PostCard from "@/components/PostCard";
-import HeroSection from "@/components/HeroSection";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
-import PaginatedPosts from "@/components/PaginatedPosts";
-import Link from "next/link";
+import HeroSection from "@/components/home/HeroSection";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
+import RecentNewsSection from "@/components/home/RecentNewsSection";
+import CategorySection from "@/components/home/CategorySection";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
@@ -19,30 +18,27 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSiteSettingsAPI();
 
   return {
-    title: settings.siteTitle || "Home",
+    title: settings.siteTitle || "Početna",
     description:
-      settings.siteDescription ||
-      "A blog about technology, development, and life",
+      settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
     keywords: [
       "blog",
-      "technology",
-      "development",
+      "tehnologija",
+      "razvoj",
       ...(settings.siteKeywords || []),
     ],
     openGraph: {
-      title: settings.siteTitle || "My Awesome Blog",
+      title: settings.siteTitle || "Moj Veličanstven Blog",
       description:
-        settings.siteDescription ||
-        "A blog about technology, development, and life",
+        settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
       type: "website",
       url: "/",
     },
     twitter: {
       card: "summary_large_image",
-      title: settings.siteTitle || "My Awesome Blog",
+      title: settings.siteTitle || "Moj Veličanstven Blog",
       description:
-        settings.siteDescription ||
-        "A blog about technology, development, and life",
+        settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
     },
   };
 }
@@ -75,10 +71,14 @@ export default async function Home({
   if (hasHeroImage && heroPost?.id) {
     excludeIds.push(heroPost.id);
   }
-  if (featuredPost?.sticky && featuredPost?.id && featuredPost.id !== heroPost?.id) {
+  if (
+    featuredPost?.sticky &&
+    featuredPost?.id &&
+    featuredPost.id !== heroPost?.id
+  ) {
     excludeIds.push(featuredPost.id);
   }
-  
+
   const postsForPagination = allPosts
     .filter((p: any) => !excludeIds.includes(p.id))
     .slice(0, 25); // Limit to 25 posts for pagination
@@ -99,10 +99,9 @@ export default async function Home({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: settings.siteTitle || "My Awesome Blog",
+    name: settings.siteTitle || "Moj Veličanstven Blog",
     description:
-      settings.siteDescription ||
-      "A blog about technology, development, and life",
+      settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
     url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     blogPost: postsForPagination.slice(0, 5).map((post: any) => ({
       "@type": "BlogPosting",
@@ -125,69 +124,19 @@ export default async function Home({
         {hasHeroImage && heroPost && <HeroSection post={heroPost} />}
 
         {/* Recent News Section - Paginated Posts with Sidebar */}
-        {postsForPagination.length === 0 ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyTitle}>No posts found.</p>
-            <p className={styles.emptySubtitle}>
-              Create your first post in WordPress admin.
-            </p>
-          </div>
-        ) : (
-          <>
-            <section id="recent-news" className={styles.recentNewsSection}>
-              <h2 className={styles.sectionTitle}>Recent News</h2>
-
-              <div className={styles.grid}>
-                {/* Main Content - 2/3 width - Client-side paginated posts */}
-                <PaginatedPosts posts={postsForPagination} perPage={5} />
-
-                {/* Sidebar - 1/3 width */}
-                <aside className={styles.sidebar}>
-                  {featuredPost && (
-                    <div className={styles.sidebarSection}>
-                      <h2>Featured Post</h2>
-                      <PostCard post={featuredPost} featured />
-                    </div>
-                  )}
-
-                  <div className={styles.sidebarSection}>
-                    <div className={styles.aboutCard}>
-                      <h2>About</h2>
-                      <p>
-                        Welcome to my blog! Here I share my thoughts, ideas, and
-                        experiences on various topics.
-                      </p>
-                    </div>
-                  </div>
-                </aside>
-              </div>
-            </section>
-          </>
-        )}
+        <RecentNewsSection
+          posts={postsForPagination}
+          featuredPost={featuredPost}
+        />
 
         {/* Category Sections */}
-        {topCategories.map((category: any, index: number) => {
-          const categoryPosts = categoryPostsResults[index]?.posts || [];
-
-          if (categoryPosts.length === 0) return null;
-
-          return (
-            <section key={category.id} className={styles.categorySection}>
-              <Link
-                href={`/${category.slug}`}
-                className={styles.categoryTitleLink}
-              >
-                <h2 className={styles.sectionTitle}>{category.name}</h2>
-              </Link>
-
-              <div className={styles.postsGrid}>
-                {categoryPosts.map((post: any) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+        {topCategories.map((category: any, index: number) => (
+          <CategorySection
+            key={category.id}
+            category={category}
+            posts={categoryPostsResults[index]?.posts || []}
+          />
+        ))}
       </main>
 
       <Footer />

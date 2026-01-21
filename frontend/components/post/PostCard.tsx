@@ -24,9 +24,9 @@ function slugifyAuthorName(name: string): string {
 
 export default function PostCard({ post, featured = false }: PostCardProps) {
   const authorData = post._embedded?.author?.[0];
-  const author = authorData?.name || "Unknown";
+  const author = authorData?.name || "Nepoznato";
   const authorSlug = authorData?.slug || slugifyAuthorName(author);
-  const date = new Date(post.date).toLocaleDateString("en-US", {
+  const date = new Date(post.date).toLocaleDateString("hr-HR", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -97,7 +97,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             <time dateTime={post.date}>{date}</time>
             <span>•</span>
             <span className={styles.readingTime}>
-              <FaClock /> {readingTime} min read
+              <FaClock /> {readingTime} min čitanja
             </span>
             {viewCount > 0 && (
               <>
@@ -167,7 +167,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             <time dateTime={post.date}>{date}</time>
             <span>•</span>
             <span className={styles.readingTime}>
-              <FaClock /> {readingTime} min read
+              <FaClock /> {readingTime} min čitanja
             </span>
             {viewCount > 0 && (
               <>

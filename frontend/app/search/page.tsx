@@ -1,8 +1,9 @@
+import Pagination from "@/components/ui/Pagination";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
+import SearchHeader from "@/components/search/SearchHeader";
+import SearchResults from "@/components/search/SearchResults";
 import Link from "next/link";
-import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
 import styles from "./page.module.css";
 
 interface SearchPageProps {
@@ -14,10 +15,10 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
   const query = resolvedSearchParams.q || "";
 
   return {
-    title: query ? `Search Results for "${query}"` : "Search",
+    title: query ? `Rezultati pretraživanja za "${query}"` : "Pretraživanje",
     description: query
-      ? `Search results for "${query}" on My Blog`
-      : "Search the blog",
+      ? `Rezultati pretraživanja za "${query}" na Mojem Blogu`
+      : "Pretraži blog",
   };
 }
 
@@ -34,11 +35,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <header className={styles.header}>
           <div className={styles.headerContent}>
             <Link href="/" className={styles.backLink}>
-              ← Back to Home
+              ← Povratak na početnu
             </Link>
-            <h1 className={styles.title}>Search</h1>
+            <h1 className={styles.title}>Pretraživanje</h1>
             <p className={styles.description}>
-              Please enter at least 3 characters to search.
+              Molimo unesite najmanje 3 znaka za pretraživanje.
             </p>
           </div>
         </header>
@@ -96,58 +97,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className={styles.container}>
       <StructuredData data={structuredData} />
 
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link href="/" className={styles.backLink}>
-            ← Back to Home
-          </Link>
-          <h1 className={styles.title}>
-            Search Results for &quot;{query}&quot;
-          </h1>
-          {!error && (
-            <p className={styles.resultCount}>
-              {total} {total === 1 ? "result" : "results"} found
-            </p>
-          )}
-        </div>
-      </header>
+      <SearchHeader query={query} total={total} error={error} />
 
       <main className={styles.main}>
-        {error ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyText}>
-              An error occurred while searching. Please try again.
-            </p>
-          </div>
-        ) : results.length === 0 ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyText}>
-              No posts found for &quot;{query}&quot;.
-            </p>
-            <p className={styles.emptySubtext}>
-              Try different keywords or browse our categories.
-            </p>
-            <Link href="/" className={styles.homeButton}>
-              Go to Home
-            </Link>
-          </div>
-        ) : (
-          <>
-            <div className={styles.resultsGrid}>
-              {results.map((post: any) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
+        <SearchResults results={results} query={query} error={error} />
 
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                basePath={`/search?q=${encodeURIComponent(query)}`}
-              />
-            )}
-          </>
+        {!error && totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            basePath={`/search?q=${encodeURIComponent(query)}`}
+          />
         )}
       </main>
 

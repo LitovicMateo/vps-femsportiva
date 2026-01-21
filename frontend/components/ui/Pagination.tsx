@@ -56,7 +56,7 @@ export default function Pagination({
           }`}
           className={styles.button}
         >
-          Previous
+          Prethodna
         </Link>
       )}
 
@@ -92,7 +92,7 @@ export default function Pagination({
           href={`${basePath}?page=${currentPage + 1}`}
           className={styles.button}
         >
-          Next
+          Sljedeća
         </Link>
       )}
     </nav>

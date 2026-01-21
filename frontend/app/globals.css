@@ -13,8 +13,8 @@ body {
 :root {
   --background: #fafafa;
   --foreground: #171717;
-  --color-primary: #0066cc;
-  --color-primary-hover: #0052a3;
+  --color-primary: #ff0099;
+  --color-primary-hover: #cc0077;
   --color-hover: rgba(0, 0, 0, 0.05);
   --color-border: #e5e7eb;
   --color-muted: #6b7280;
@@ -35,8 +35,8 @@ body {
 [data-theme="dark"] {
   --background: #0a0a0a;
   --foreground: #ededed;
-  --color-primary: #3b82f6;
-  --color-primary-hover: #60a5fa;
+  --color-primary: #ff0099;
+  --color-primary-hover: #ff33aa;
   --color-hover: rgba(255, 255, 255, 0.1);
   --color-border: #262626;
   --color-muted: #a1a1a1;

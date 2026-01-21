@@ -1,8 +1,8 @@
 import { fetchPostsByAuthorAPI } from "@/lib/api";
-import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
+import PostCard from "@/components/post/PostCard";
+import Pagination from "@/components/ui/Pagination";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
@@ -24,17 +24,17 @@ export async function generateMetadata({
 
   if (!author) {
     return {
-      title: "Author Not Found",
+      title: "Autor nije pronađen",
     };
   }
 
-  const description = author.description || `Posts by ${author.name}`;
+  const description = author.description || `Objave autora ${author.name}`;
 
   return {
-    title: `Posts by ${author.name}`,
+    title: `Objave autora ${author.name}`,
     description: description,
     openGraph: {
-      title: `Posts by ${author.name}`,
+      title: `Objave autora ${author.name}`,
       description: description,
       type: "profile",
       url: `/authors/${resolvedParams.author}`,
@@ -44,7 +44,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary",
-      title: `Posts by ${author.name}`,
+      title: `Objave autora ${author.name}`,
       description: description,
       images: author.avatar_urls ? [author.avatar_urls["96"]] : undefined,
     },
@@ -91,7 +91,7 @@ export default async function AuthorPage({
         {
           "@type": "ListItem",
           position: 1,
-          name: "Authors",
+          name: "Autori",
           item: `${process.env.NEXT_PUBLIC_SITE_URL}/authors`,
         },
         {
@@ -110,7 +110,7 @@ export default async function AuthorPage({
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Link href="/authors" className={styles.backLink}>
-            ← Back to Authors
+            ← Povratak na Autore
           </Link>
           <div className={styles.authorInfo}>
             {author.avatar_urls && (
@@ -126,7 +126,7 @@ export default async function AuthorPage({
                 <p className={styles.description}>{author.description}</p>
               )}
               <p className={styles.postCount}>
-                {total} {total === 1 ? "post" : "posts"}
+                {total} {total === 1 ? "objava" : "objava"}
               </p>
             </div>
           </div>
@@ -136,11 +136,11 @@ export default async function AuthorPage({
       <main className={styles.main}>
         {posts.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No posts found by this author.</p>
+            <p className={styles.emptyText}>Nema objava ovog autora.</p>
           </div>
         ) : (
           <>
-            <h2 className={styles.sectionTitle}>Posts by {author.name}</h2>
+            <h2 className={styles.sectionTitle}>Objave autora {author.name}</h2>
             <div className={styles.postsGrid}>
               {posts.map((post: any) => (
                 <PostCard key={post.id} post={post} />

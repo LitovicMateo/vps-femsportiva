@@ -24,12 +24,12 @@ export default function ShareButtons({ title, url }: ShareButtonsProps) {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(url);
     // You could add a toast notification here
-    alert("Link copied to clipboard!");
+    alert("Link kopiran u međuspremnik!");
   };
 
   return (
     <div className={styles.shareContainer}>
-      <h3 className={styles.shareTitle}>Share this article</h3>
+      <h3 className={styles.shareTitle}>Podijelite ovaj članak</h3>
       <div className={styles.shareButtons}>
         <a
           href={shareLinks.twitter}

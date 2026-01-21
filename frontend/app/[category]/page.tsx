@@ -1,8 +1,8 @@
 import { fetchPostsByCategoryAPI } from "@/lib/api";
-import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
+import PostCard from "@/components/post/PostCard";
+import Pagination from "@/components/ui/Pagination";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
@@ -24,12 +24,13 @@ export async function generateMetadata({
 
   if (!category) {
     return {
-      title: "Category Not Found",
+      title: "Kategorija nije pronađena",
     };
   }
 
   const description =
-    category.description || `Browse all posts in the ${category.name} category`;
+    category.description ||
+    `Pregledajte sve objave u kategoriji ${category.name}`;
 
   return {
     title: category.name,
@@ -78,7 +79,7 @@ export default async function CategoryPage({
     name: category.name,
     description:
       category.description ||
-      `Browse all posts in the ${category.name} category`,
+      `Pregledajte sve objave u kategoriji ${category.name}`,
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}`,
     mainEntity: {
       "@type": "ItemList",
@@ -99,14 +100,14 @@ export default async function CategoryPage({
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Link href="/" className={styles.backLink}>
-            ← Back to Home
+            ← Povratak na početnu
           </Link>
           <h1 className={styles.title}>{category.name}</h1>
           {category.description && (
             <p className={styles.description}>{category.description}</p>
           )}
           <p className={styles.postCount}>
-            {total} {total === 1 ? "post" : "posts"}
+            {total} {total === 1 ? "objava" : "objava"}
           </p>
         </div>
       </header>
@@ -114,7 +115,7 @@ export default async function CategoryPage({
       <main className={styles.main}>
         {posts.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No posts found in this category.</p>
+            <p className={styles.emptyText}>Nema objava u ovoj kategoriji.</p>
           </div>
         ) : (
           <>

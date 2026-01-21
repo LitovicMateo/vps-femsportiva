@@ -1,10 +1,10 @@
 import { fetchPostBySlugAPI, fetchPostsAPI } from "@/lib/api";
-import PostCard from "@/components/PostCard";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
-import PostContent from "@/components/PostContent";
-import ShareButtons from "@/components/ShareButtons";
-import ViewCounter from "@/components/ViewCounter";
+import PostCard from "@/components/post/PostCard";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
+import PostContent from "@/components/post/PostContent";
+import ShareButtons from "@/components/post/ShareButtons";
+import ViewCounter from "@/components/post/ViewCounter";
 import {
   calculateReadingTime,
   formatCompactNumber,
@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Post Not Found",
+      title: "Objava nije pronađena",
     };
   }
 
@@ -116,7 +116,7 @@ export default async function PostPage({ params }: PostPageProps) {
     .filter((p: any) => p.id !== post.id)
     .slice(0, 3);
 
-  const date = new Date(post.date).toLocaleDateString("en-US", {
+  const date = new Date(post.date).toLocaleDateString("hr-HR", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -139,7 +139,7 @@ export default async function PostPage({ params }: PostPageProps) {
       : undefined,
     publisher: {
       "@type": "Organization",
-      name: "My Awesome Blog",
+      name: "Moj Veličanstven Blog",
       logo: {
         "@type": "ImageObject",
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
@@ -166,7 +166,7 @@ export default async function PostPage({ params }: PostPageProps) {
             href={`/${resolvedParams.category}`}
             className={styles.backLink}
           >
-            ← Back to {postCategory.name}
+            ← Povratak na {postCategory.name}
           </Link>
         </div>
       </header>
@@ -221,13 +221,13 @@ export default async function PostPage({ params }: PostPageProps) {
                       </time>
                       <span>•</span>
                       <span className={styles.readingTime}>
-                        <FaClock /> {readingTime} min read
+                        <FaClock /> {readingTime} min čitanja
                       </span>
                       {viewCount > 0 && (
                         <>
                           <span>•</span>
                           <span className={styles.viewCount}>
-                            <FaEye /> {formatCompactNumber(viewCount)} views
+                            <FaEye /> {formatCompactNumber(viewCount)} pregleda
                           </span>
                         </>
                       )}
@@ -247,7 +247,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {post._embedded?.["wp:term"]?.[1] &&
               post._embedded["wp:term"][1].length > 0 && (
                 <div className={styles.tags}>
-                  <h3 className={styles.tagsTitle}>Tags</h3>
+                  <h3 className={styles.tagsTitle}>Oznake</h3>
                   <div className={styles.tagsList}>
                     {post._embedded["wp:term"][1].map((tag: any) => (
                       <Link
@@ -267,7 +267,7 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
           <div className={styles.relatedSection}>
-            <h2 className={styles.relatedTitle}>Related Posts</h2>
+            <h2 className={styles.relatedTitle}>Povezane Objave</h2>
             <div className={styles.relatedGrid}>
               {relatedPosts.map((relatedPost: any) => (
                 <PostCard key={relatedPost.id} post={relatedPost} />

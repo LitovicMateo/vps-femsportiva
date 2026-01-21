@@ -1,0 +1,44 @@
+.categorySection {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--color-border);
+}
+
+.categoryTitleLink {
+  text-decoration: none;
+  color: var(--foreground);
+  display: inline-block;
+  margin-bottom: 2rem;
+  transition: color 0.3s ease;
+}
+
+.categoryTitleLink:hover {
+  color: var(--color-primary);
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .categorySection {
+    margin-top: 3rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+
+  .postsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

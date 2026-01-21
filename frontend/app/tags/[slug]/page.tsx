@@ -1,8 +1,8 @@
 import { fetchPostsByTagAPI } from "@/lib/api";
-import PostCard from "@/components/PostCard";
-import Pagination from "@/components/Pagination";
-import Footer from "@/components/Footer";
-import StructuredData from "@/components/StructuredData";
+import PostCard from "@/components/post/PostCard";
+import Pagination from "@/components/ui/Pagination";
+import Footer from "@/components/layout/Footer";
+import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
@@ -24,12 +24,12 @@ export async function generateMetadata({
 
   if (!tag) {
     return {
-      title: "Tag Not Found",
+      title: "Oznaka nije pronađena",
     };
   }
 
   const description =
-    tag.description || `Browse all posts tagged with ${tag.name}`;
+    tag.description || `Pregledajte sve objave označene sa ${tag.name}`;
 
   return {
     title: tag.name,
@@ -73,7 +73,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: tag.name,
-    description: tag.description || `Browse all posts tagged with ${tag.name}`,
+    description:
+      tag.description || `Pregledajte sve objave označene sa ${tag.name}`,
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/tags/${resolvedParams.slug}`,
     mainEntity: {
       "@type": "ItemList",
@@ -100,14 +101,14 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Link href="/" className={styles.backLink}>
-            ← Back to Home
+            ← Povratak na početnu
           </Link>
           <h1 className={styles.title}>{tag.name}</h1>
           {tag.description && (
             <p className={styles.description}>{tag.description}</p>
           )}
           <p className={styles.postCount}>
-            {total} {total === 1 ? "post" : "posts"}
+            {total} {total === 1 ? "objava" : "objava"}
           </p>
         </div>
       </header>
@@ -115,7 +116,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       <main className={styles.main}>
         {posts.length === 0 ? (
           <div className={styles.empty}>
-            <p className={styles.emptyText}>No posts found with this tag.</p>
+            <p className={styles.emptyText}>Nema objava s ovom oznakom.</p>
           </div>
         ) : (
           <>

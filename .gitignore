@@ -1,6 +1,8 @@
-# Environment files
+# Environment files (keep examples, ignore actual .env)
 .env
 .env.local
+# Note: .env.dev, .env.staging, .env.prod are committed as templates
+# Copy one to .env on your server and update with actual secrets
 
 # WordPress uploads
 data/uploads/*
