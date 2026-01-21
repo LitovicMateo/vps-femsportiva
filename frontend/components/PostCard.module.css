@@ -1,5 +1,5 @@
 .postCard {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
@@ -33,7 +33,7 @@
 .category {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0066cc;
+  color: var(--color-primary);
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -41,7 +41,16 @@
 }
 
 .category:hover {
-  color: #0052a3;
+  color: var(--color-primary-hover);
+}
+
+.titleLink {
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.titleLink:hover {
+  color: var(--color-link);
 }
 
 .featuredTitle {
@@ -53,11 +62,11 @@
 }
 
 .featuredTitle:hover {
-  color: #0066cc;
+  color: var(--color-link);
 }
 
 .excerpt {
-  color: #666;
+  color: var(--color-muted);
   margin-bottom: 1rem;
 }
 
@@ -65,7 +74,9 @@
   display: flex;
   align-items: center;
   font-size: 0.875rem;
-  color: #999;
+  color: var(--color-muted);
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .meta span {
@@ -76,14 +87,26 @@
   margin-left: 0;
 }
 
+.readingTime,
+.viewCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.readingTime svg,
+.viewCount svg {
+  font-size: 0.75rem;
+}
+
 .authorLink {
-  color: #666;
+  color: var(--color-muted);
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .authorLink:hover {
-  color: #0066cc;
+  color: var(--color-primary);
 }
 
 /* Regular Post Card */
@@ -114,7 +137,7 @@
 .categorySmall {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #0066cc;
+  color: var(--color-primary);
   text-decoration: none;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -122,7 +145,7 @@
 }
 
 .categorySmall:hover {
-  color: #0052a3;
+  color: var(--color-primary-hover);
 }
 
 .regularTitle {
@@ -134,7 +157,7 @@
 }
 
 .regularTitle:hover {
-  color: #0066cc;
+  color: var(--color-link);
 }
 
 .tags {
@@ -146,8 +169,8 @@
 
 .tag {
   padding: 0.25rem 0.75rem;
-  background: #f5f5f5;
-  color: #666;
+  background: var(--color-hover);
+  color: var(--color-muted);
   font-size: 0.75rem;
   border-radius: 9999px;
   text-decoration: none;
@@ -157,7 +180,7 @@
 }
 
 .tag:hover {
-  background: #0066cc;
+  background: var(--color-primary);
   color: #ffffff;
 }
 

@@ -1,13 +1,13 @@
 .container {
   min-height: 100vh;
-  background: #fafafa;
+  background: var(--background);
   display: flex;
   flex-direction: column;
 }
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .headerContent {
@@ -19,7 +19,7 @@
 .backLinkSkeleton {
   width: 120px;
   height: 18px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.5rem;
   position: relative;
@@ -29,7 +29,7 @@
 .titleSkeleton {
   width: 200px;
   height: 36px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -38,7 +38,7 @@
 .descriptionSkeleton {
   width: 400px;
   height: 20px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-top: 0.5rem;
   position: relative;
@@ -48,7 +48,7 @@
 .countSkeleton {
   width: 150px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-top: 0.5rem;
   position: relative;
@@ -71,7 +71,7 @@
 }
 
 .postCard {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -82,7 +82,7 @@
 .postImage {
   aspect-ratio: 16 / 9;
   width: 100%;
-  background: #e5e7eb;
+  background: var(--color-border);
   position: relative;
   overflow: hidden;
 }
@@ -94,7 +94,7 @@
 .categoryBadge {
   width: 80px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.75rem;
   position: relative;
@@ -107,7 +107,7 @@
 
 .titleLine {
   height: 24px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.5rem;
   position: relative;
@@ -124,7 +124,7 @@
 
 .excerptLine {
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.5rem;
   position: relative;
@@ -137,7 +137,7 @@
 
 .postMeta {
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
 }
 
 .authorMeta {
@@ -150,7 +150,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--color-border);
   position: relative;
   overflow: hidden;
 }
@@ -164,7 +164,7 @@
 .authorName {
   width: 100px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -173,7 +173,7 @@
 .date {
   width: 80px;
   height: 14px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   position: relative;
   overflow: hidden;

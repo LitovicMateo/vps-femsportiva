@@ -1,0 +1,29 @@
+.toggleButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.toggleButton:hover {
+  background: var(--color-hover);
+  transform: scale(1.1);
+}
+
+.toggleButton:active {
+  transform: scale(0.95);
+}
+
+.toggleButton svg {
+  transition: transform 0.3s ease;
+}
+
+.toggleButton:hover svg {
+  transform: rotate(20deg);
+}

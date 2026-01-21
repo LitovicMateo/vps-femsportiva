@@ -1,13 +1,13 @@
 .container {
   min-height: 100vh;
-  background: #fafafa;
+  background: var(--background);
   display: flex;
   flex-direction: column;
 }
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .headerContent {
@@ -19,7 +19,7 @@
 .backLinkSkeleton {
   width: 150px;
   height: 20px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
 }
 
@@ -32,7 +32,7 @@
 }
 
 .article {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -43,7 +43,7 @@
   aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
-  background: #e5e7eb;
+  background: var(--color-border);
   position: relative;
 }
 
@@ -56,7 +56,7 @@
 .categoryBadgeSkeleton {
   width: 120px;
   height: 20px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 1rem;
   position: relative;
@@ -70,7 +70,7 @@
 
 .titleLine {
   height: 36px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.75rem;
   position: relative;
@@ -88,7 +88,7 @@
   gap: 1rem;
   margin-bottom: 2rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .authorInfoSkeleton {
@@ -101,7 +101,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: var(--color-border);
   position: relative;
   overflow: hidden;
 }
@@ -115,7 +115,7 @@
 .authorNameSkeleton {
   width: 120px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -124,7 +124,7 @@
 .dateSkeleton {
   width: 100px;
   height: 14px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   position: relative;
   overflow: hidden;
@@ -141,7 +141,7 @@
 
 .line {
   height: 18px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.75rem;
   position: relative;
@@ -158,13 +158,13 @@
   gap: 1rem;
   margin-bottom: 3rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
 }
 
 .shareButton {
   width: 100px;
   height: 40px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 6px;
   position: relative;
   overflow: hidden;
@@ -178,7 +178,7 @@
 .relatedTitleSkeleton {
   width: 200px;
   height: 28px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 2rem;
   position: relative;
@@ -192,7 +192,7 @@
 }
 
 .relatedCard {
-  background: #ffffff;
+  background: var(--color-card);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -201,7 +201,7 @@
 .relatedImage {
   aspect-ratio: 16 / 9;
   width: 100%;
-  background: #e5e7eb;
+  background: var(--color-border);
   position: relative;
   overflow: hidden;
 }
@@ -213,7 +213,7 @@
 .relatedCategory {
   width: 80px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.75rem;
   position: relative;
@@ -222,7 +222,7 @@
 
 .relatedCardTitle {
   height: 20px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-bottom: 0.5rem;
   position: relative;
@@ -236,7 +236,7 @@
 .relatedMeta {
   width: 100px;
   height: 14px;
-  background: #e5e7eb;
+  background: var(--color-border);
   border-radius: 4px;
   margin-top: 1rem;
   position: relative;

@@ -13,6 +13,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { HiMenu, HiX } from "react-icons/hi";
+import ThemeToggle from "./ThemeToggle";
 import styles from "./Header.module.css";
 
 interface Category {
@@ -32,6 +33,8 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Sort categories by post count
   const sortedCategories = [...categories].sort((a, b) => b.count - a.count);
@@ -39,6 +42,26 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   // Show first 4 categories in nav, rest in dropdown
   const visibleCategories = sortedCategories.slice(0, 4);
   const dropdownCategories = sortedCategories.slice(4);
+
+  // Sticky header scroll behavior
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show header when scrolling up or at top
+      // Hide header when scrolling down past threshold
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setIsHeaderVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsHeaderVisible(false);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -88,7 +111,9 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   };
 
   return (
-    <header className={styles.header}>
+    <header
+      className={`${styles.header} ${!isHeaderVisible ? styles.hidden : ""}`}
+    >
       <div className={styles.container}>
         {/* Logo/Brand */}
         <Link href="/" className={styles.brand} onClick={closeMenu}>
@@ -204,19 +229,25 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
                 <social.icon />
               </motion.a>
             ))}
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
           </div>
         )}
 
         {/* Mobile Menu Button */}
         {isMobile && (
-          <motion.button
-            className={styles.menuButton}
-            onClick={toggleMenu}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <HiX size={28} /> : <HiMenu size={28} />}
-          </motion.button>
+          <>
+            <ThemeToggle />
+            <motion.button
+              className={styles.menuButton}
+              onClick={toggleMenu}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <HiX size={28} /> : <HiMenu size={28} />}
+            </motion.button>
+          </>
         )}
       </div>
 

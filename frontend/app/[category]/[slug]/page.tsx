@@ -4,6 +4,9 @@ import Footer from "@/components/Footer";
 import StructuredData from "@/components/StructuredData";
 import PostContent from "@/components/PostContent";
 import ShareButtons from "@/components/ShareButtons";
+import ViewCounter from "@/components/ViewCounter";
+import { calculateReadingTime, formatCompactNumber } from "@/lib/utils";
+import { FaClock, FaEye } from "react-icons/fa";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
@@ -91,6 +94,12 @@ export default async function PostPage({ params }: PostPageProps) {
     post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || null;
   const tags = post.tags || [];
 
+  // Calculate reading time
+  const readingTime = calculateReadingTime(post.content.rendered);
+
+  // Get view count
+  const viewCount = post.view_count || 0;
+
   // Fetch related posts based on tags
   // For now, just fetch recent posts from same category
   const relatedData = await fetchPostsAPI({
@@ -143,6 +152,7 @@ export default async function PostPage({ params }: PostPageProps) {
   return (
     <div className={styles.container}>
       <StructuredData data={structuredData} />
+      <ViewCounter postId={post.id} slug={post.slug} />
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
@@ -199,9 +209,23 @@ export default async function PostPage({ params }: PostPageProps) {
                     >
                       <p className={styles.authorName}>{author.name}</p>
                     </Link>
-                    <time dateTime={post.date} className={styles.date}>
-                      {date}
-                    </time>
+                    <div className={styles.postMeta}>
+                      <time dateTime={post.date} className={styles.date}>
+                        {date}
+                      </time>
+                      <span>•</span>
+                      <span className={styles.readingTime}>
+                        <FaClock /> {readingTime} min read
+                      </span>
+                      {viewCount > 0 && (
+                        <>
+                          <span>•</span>
+                          <span className={styles.viewCount}>
+                            <FaEye /> {formatCompactNumber(viewCount)} views
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

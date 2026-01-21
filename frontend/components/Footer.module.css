@@ -1,6 +1,6 @@
 .footer {
-  background: #ffffff;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-card);
+  border-top: 1px solid var(--color-border);
   margin-top: 4rem;
 }
 
@@ -12,7 +12,7 @@
 
 .content {
   text-align: center;
-  color: #6b7280;
+  color: var(--color-muted);
   font-size: 0.875rem;
 }
 

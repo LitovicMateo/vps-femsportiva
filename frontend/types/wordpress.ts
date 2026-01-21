@@ -50,6 +50,7 @@ export interface WP_REST_API_Post {
   meta: Record<string, any>;
   categories: number[];
   tags: number[];
+  view_count?: number; // Custom field from view-counter plugin
   // Embedded data when using _embed parameter
   _embedded?: {
     author?: WP_REST_API_User[];
@@ -192,8 +193,10 @@ export interface WP_REST_API_Comment {
  * WordPress REST API Page object
  * Similar to Post but with different fields
  */
-export interface WP_REST_API_Page
-  extends Omit<WP_REST_API_Post, "categories" | "tags" | "sticky" | "format"> {
+export interface WP_REST_API_Page extends Omit<
+  WP_REST_API_Post,
+  "categories" | "tags" | "sticky" | "format"
+> {
   parent: number;
   menu_order: number;
 }

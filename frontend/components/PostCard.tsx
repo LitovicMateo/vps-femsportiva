@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { WP_REST_API_Post } from "@/types/wordpress";
+import { calculateReadingTime, formatCompactNumber } from "@/lib/utils";
+import { FaClock, FaEye } from "react-icons/fa";
 import styles from "./PostCard.module.css";
 
 interface PostCardProps {
@@ -32,6 +34,13 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
   const categories = post._embedded?.["wp:term"]?.[0] || [];
   const primaryCategory = categories[0];
 
+  // Calculate reading time
+  const content = post.content?.rendered || "";
+  const readingTime = calculateReadingTime(content);
+
+  // Get view count
+  const viewCount = post.view_count || 0;
+
   // Get category slug for URL
   const categorySlug = primaryCategory?.slug || "uncategorized";
 
@@ -55,7 +64,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               {primaryCategory.name}
             </Link>
           )}
-          <Link href={`/${categorySlug}/${post.slug}`}>
+          <Link href={`/${categorySlug}/${post.slug}`} className={styles.titleLink}>
             <h2
               className={styles.featuredTitle}
               dangerouslySetInnerHTML={{ __html: title }}
@@ -78,6 +87,18 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             )}
             <span>•</span>
             <time dateTime={post.date}>{date}</time>
+            <span>•</span>
+            <span className={styles.readingTime}>
+              <FaClock /> {readingTime} min read
+            </span>
+            {viewCount > 0 && (
+              <>
+                <span>•</span>
+                <span className={styles.viewCount}>
+                  <FaEye /> {formatCompactNumber(viewCount)}
+                </span>
+              </>
+            )}
           </div>
           {topTags.length > 0 && (
             <div className={styles.tags}>
@@ -114,7 +135,7 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
               {primaryCategory.name}
             </Link>
           )}
-          <Link href={`/${categorySlug}/${post.slug}`}>
+          <Link href={`/${categorySlug}/${post.slug}`} className={styles.titleLink}>
             <h3
               className={styles.regularTitle}
               dangerouslySetInnerHTML={{ __html: title }}
@@ -133,6 +154,18 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             )}
             <span>•</span>
             <time dateTime={post.date}>{date}</time>
+            <span>•</span>
+            <span className={styles.readingTime}>
+              <FaClock /> {readingTime} min read
+            </span>
+            {viewCount > 0 && (
+              <>
+                <span>•</span>
+                <span className={styles.viewCount}>
+                  <FaEye /> {formatCompactNumber(viewCount)}
+                </span>
+              </>
+            )}
           </div>
           {topTags.length > 0 && (
             <div className={styles.tags}>
