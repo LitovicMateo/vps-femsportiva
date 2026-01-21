@@ -68,8 +68,17 @@ export default async function Home({
     allPosts.find((p: any) => p.sticky) ||
     (hasHeroImage ? allPosts[1] : allPosts[0]);
 
-  // Get posts for pagination (excluding hero and featured)
-  const excludeIds = [heroPost?.id, featuredPost?.id].filter(Boolean);
+  // Get posts for pagination
+  // Only exclude hero if it has a featured image (otherwise it won't be displayed)
+  // Only exclude featured if it's sticky (otherwise it's just a duplicate)
+  const excludeIds: number[] = [];
+  if (hasHeroImage && heroPost?.id) {
+    excludeIds.push(heroPost.id);
+  }
+  if (featuredPost?.sticky && featuredPost?.id && featuredPost.id !== heroPost?.id) {
+    excludeIds.push(featuredPost.id);
+  }
+  
   const postsForPagination = allPosts
     .filter((p: any) => !excludeIds.includes(p.id))
     .slice(0, 25); // Limit to 25 posts for pagination

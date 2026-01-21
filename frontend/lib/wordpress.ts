@@ -18,10 +18,21 @@ async function tryFetch<T>(endpoint: string): Promise<T | null> {
     ? API_BASE.replace(/\/wp-json\/?$/, "")
     : API_BASE.replace(/\/$/, "");
 
+  // Split endpoint into path and query string
+  const [path, queryString] = endpoint.split('?');
+  
   // Try different URL patterns
-  urls.push(`${root}/index.php?rest_route=${endpoint}`);
-  urls.push(`${root}/wp-json${endpoint}`);
-  urls.push(`${API_BASE}${endpoint}`);
+  if (queryString) {
+    // With query string - need to properly encode for rest_route
+    urls.push(`${root}/index.php?rest_route=${path}&${queryString}`);
+    urls.push(`${root}/wp-json${path}?${queryString}`);
+    urls.push(`${API_BASE}${path}?${queryString}`);
+  } else {
+    // Without query string
+    urls.push(`${root}/index.php?rest_route=${endpoint}`);
+    urls.push(`${root}/wp-json${endpoint}`);
+    urls.push(`${API_BASE}${endpoint}`);
+  }
 
   for (const url of urls) {
     try {
@@ -88,7 +99,6 @@ export async function fetchPosts(params?: {
       // Try next URL
     }
   }
-
   return { posts: [], total: 0, totalPages: 0 };
 }
 
@@ -98,7 +108,7 @@ export async function fetchPosts(params?: {
 export async function fetchPostBySlug(
   slug: string,
 ): Promise<WP_REST_API_Post | null> {
-  const endpoint = `/wp/v2/posts?slug=${slug}&_embed`;
+  const endpoint = `/wp/v2/posts?slug=${slug}&_embed=true`;
   const data = await tryFetch<WP_REST_API_Post[]>(endpoint);
   return data && data.length > 0 ? data[0] : null;
 }

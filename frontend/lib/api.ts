@@ -1,4 +1,5 @@
-// Client for fetching data from our Next.js API routes
+// Client for fetching data - uses WordPress API directly on server, Next.js API routes on client
+import * as wordpressClient from "./wordpress";
 
 // Use NEXT_PUBLIC_SITE_URL for absolute URLs, fallback to localhost for development
 const getBaseUrl = () => {
@@ -9,6 +10,8 @@ const getBaseUrl = () => {
   // Server - use absolute URL
   return process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 };
+
+const isServer = typeof window === "undefined";
 
 interface PaginatedResponse<T> {
   success: boolean;
@@ -33,6 +36,19 @@ export async function fetchPostsAPI(params?: {
   tags?: number;
   author?: number;
 }) {
+  // On server, call WordPress directly to avoid HTTP requests to ourselves
+  if (isServer) {
+    const result = await wordpressClient.fetchPosts({
+      page: params?.page,
+      perPage: params?.perPage,
+      categories: params?.categories,
+      tags: params?.tags,
+      author: params?.author,
+    });
+    return result;
+  }
+
+  // On client, use Next.js API routes
   const queryParams = new URLSearchParams();
 
   if (params?.page) queryParams.append("page", params.page.toString());
@@ -61,6 +77,12 @@ export async function fetchPostsAPI(params?: {
  * Fetch single post by slug from API
  */
 export async function fetchPostBySlugAPI(slug: string) {
+  // On server, call WordPress directly
+  if (isServer) {
+    return await wordpressClient.fetchPostBySlug(slug);
+  }
+
+  // On client, use Next.js API routes
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/posts/${slug}`;
 
@@ -85,6 +107,12 @@ export async function fetchPostsByCategoryAPI(
   page: number = 1,
   perPage: number = 10,
 ) {
+  // On server, call WordPress directly
+  if (isServer) {
+    return await wordpressClient.fetchPostsByCategory(categorySlug, page, perPage);
+  }
+
+  // On client, use Next.js API routes
   const queryParams = new URLSearchParams({
     page: page.toString(),
     per_page: perPage.toString(),
@@ -171,6 +199,12 @@ export async function fetchPostsByAuthorAPI(
  * Fetch all categories from API
  */
 export async function fetchCategoriesAPI() {
+  // On server, call WordPress directly
+  if (isServer) {
+    return await wordpressClient.fetchCategories();
+  }
+
+  // On client, use Next.js API routes
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/categories`;
 
@@ -257,6 +291,18 @@ export async function searchPostsAPI(
  * Fetch site settings from API
  */
 export async function fetchSiteSettingsAPI() {
+  // On server, return default settings or read from file
+  if (isServer) {
+    // In production, return default site settings
+    // These can be customized via WordPress settings later
+    return {
+      siteTitle: "My Blog",
+      siteDescription: "A blog about technology and development",
+      siteKeywords: ["blog", "technology", "development"],
+    };
+  }
+
+  // On client, use Next.js API routes
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/settings`;
 

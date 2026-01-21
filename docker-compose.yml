@@ -17,8 +17,9 @@ services:
       WORDPRESS_INTERNAL_URL: ${WORDPRESS_INTERNAL_URL:-http://wordpress}
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_ENVIRONMENT_TYPE', '${ENVIRONMENT}');
-        define('WP_HOME', '${WORDPRESS_URL}');
-        define('WP_SITEURL', '${WORDPRESS_URL}');
+        define('WP_HOME', '${WORDPRESS_URL}/wp');
+        define('WP_SITEURL', '${WORDPRESS_URL}/wp');
+        define('WP_CONTENT_URL', '${WORDPRESS_URL}/wp/wp-content');
         @ini_set('upload_max_filesize', '2000M');
         @ini_set('post_max_size', '2000M');
         @ini_set('memory_limit', '512M');
