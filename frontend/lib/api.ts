@@ -45,7 +45,18 @@ export async function fetchPostsAPI(params?: {
       tags: params?.tags,
       author: params?.author,
     });
-    return result;
+    // Include the same `pagination` envelope the client branch (/api/posts)
+    // returns, so consumers (e.g. authors index) read data.pagination.* on both
+    // paths. Keeps posts/total/totalPages too for any flat-shape callers.
+    return {
+      ...result,
+      pagination: {
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: params?.page ?? 1,
+        perPage: params?.perPage ?? result.posts.length,
+      },
+    };
   }
 
   // On client, use Next.js API routes
@@ -109,7 +120,23 @@ export async function fetchPostsByCategoryAPI(
 ) {
   // On server, call WordPress directly
   if (isServer) {
-    return await wordpressClient.fetchPostsByCategory(categorySlug, page, perPage);
+    const result = await wordpressClient.fetchPostsByCategory(
+      categorySlug,
+      page,
+      perPage,
+    );
+    // Wrap in the same `pagination` envelope the client branch (and the
+    // /api/categories/[slug]/posts route) returns, so consumers like
+    // app/[category]/page.tsx can read data.pagination.* on both paths.
+    return {
+      ...result,
+      pagination: {
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: page,
+        perPage,
+      },
+    };
   }
 
   // On client, use Next.js API routes
@@ -143,6 +170,25 @@ export async function fetchPostsByTagAPI(
   page: number = 1,
   perPage: number = 10,
 ) {
+  // On server, call WordPress directly
+  if (isServer) {
+    const result = await wordpressClient.fetchPostsByTag(
+      tagSlug,
+      page,
+      perPage,
+    );
+    return {
+      ...result,
+      pagination: {
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: page,
+        perPage,
+      },
+    };
+  }
+
+  // On client, use Next.js API routes
   const queryParams = new URLSearchParams({
     page: page.toString(),
     per_page: perPage.toString(),
@@ -173,6 +219,36 @@ export async function fetchPostsByAuthorAPI(
   page: number = 1,
   perPage: number = 10,
 ) {
+  // On server, call WordPress directly
+  if (isServer) {
+    const author = await wordpressClient.fetchAuthorBySlug(authorSlug);
+    if (!author) {
+      return {
+        posts: [],
+        total: 0,
+        totalPages: 0,
+        author: null,
+        pagination: { total: 0, totalPages: 0, currentPage: page, perPage },
+      };
+    }
+    const result = await wordpressClient.fetchPostsByAuthor(
+      author.id,
+      page,
+      perPage,
+    );
+    return {
+      ...result,
+      author,
+      pagination: {
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: page,
+        perPage,
+      },
+    };
+  }
+
+  // On client, use Next.js API routes
   const queryParams = new URLSearchParams({
     page: page.toString(),
     per_page: perPage.toString(),
@@ -224,6 +300,12 @@ export async function fetchCategoriesAPI() {
  * Fetch all authors from API
  */
 export async function fetchAuthorsAPI() {
+  // On server, call WordPress directly to avoid HTTP requests to ourselves
+  if (isServer) {
+    return await wordpressClient.fetchAuthors();
+  }
+
+  // On client, use Next.js API routes
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/authors`;
 
@@ -243,6 +325,12 @@ export async function fetchAuthorsAPI() {
  * Fetch author by slug from API
  */
 export async function fetchAuthorBySlugAPI(slug: string) {
+  // On server, call WordPress directly
+  if (isServer) {
+    return await wordpressClient.fetchAuthorBySlug(slug);
+  }
+
+  // On client, use Next.js API routes
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/api/authors/${slug}`;
 
@@ -267,6 +355,24 @@ export async function searchPostsAPI(
   page: number = 1,
   perPage: number = 10,
 ) {
+  // On server, call WordPress directly (avoids a self-HTTP hop to /api/search).
+  if (isServer) {
+    const result = await wordpressClient.searchPosts(query, page, perPage);
+    return {
+      success: true,
+      query,
+      results: result.posts,
+      total: result.total,
+      pagination: {
+        total: result.total,
+        totalPages: result.totalPages,
+        currentPage: page,
+        perPage,
+      },
+    };
+  }
+
+  // On client, use the Next.js API route.
   const queryParams = new URLSearchParams({
     q: query,
     page: page.toString(),
@@ -277,7 +383,7 @@ export async function searchPostsAPI(
   const url = `${baseUrl}/api/search?${queryParams.toString()}`;
 
   const res = await fetch(url, {
-    cache: "no-store", // Don't cache search results
+    next: { revalidate: 60 },
   });
 
   if (!res.ok) {
@@ -290,15 +396,18 @@ export async function searchPostsAPI(
 /**
  * Fetch site settings from API
  */
+const DEFAULT_SITE_TITLE = "FEM Sportiva";
+const DEFAULT_SITE_DESCRIPTION = "Blog o sportu i životnom stilu";
+const DEFAULT_SITE_KEYWORDS = ["blog", "sport", "femsportiva"];
+
 export async function fetchSiteSettingsAPI() {
-  // On server, return default settings or read from file
+  // On server, fetch site info directly from WordPress
   if (isServer) {
-    // In production, return default site settings
-    // These can be customized via WordPress settings later
+    const siteInfo = await wordpressClient.fetchSiteInfo();
     return {
-      siteTitle: "My Blog",
-      siteDescription: "A blog about technology and development",
-      siteKeywords: ["blog", "technology", "development"],
+      siteTitle: siteInfo?.name || DEFAULT_SITE_TITLE,
+      siteDescription: siteInfo?.description || DEFAULT_SITE_DESCRIPTION,
+      siteKeywords: DEFAULT_SITE_KEYWORDS,
     };
   }
 
@@ -315,5 +424,20 @@ export async function fetchSiteSettingsAPI() {
   }
 
   const data = await res.json();
-  return data.success ? data.site : null;
+  if (!data.success) {
+    // Fall back to defaults rather than null, so callers (layout, home, archives)
+    // can always read settings.* without null guards. Keeps this branch's shape
+    // identical to the server branch above.
+    return {
+      siteTitle: DEFAULT_SITE_TITLE,
+      siteDescription: DEFAULT_SITE_DESCRIPTION,
+      siteKeywords: DEFAULT_SITE_KEYWORDS,
+    };
+  }
+
+  return {
+    siteTitle: data.site.name || DEFAULT_SITE_TITLE,
+    siteDescription: data.site.description || DEFAULT_SITE_DESCRIPTION,
+    siteKeywords: DEFAULT_SITE_KEYWORDS,
+  };
 }

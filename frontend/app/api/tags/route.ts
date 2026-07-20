@@ -22,19 +22,22 @@ export async function GET(request: NextRequest) {
         )
       : tags;
 
-    return NextResponse.json({
-      success: true,
-      tags: filteredTags.slice(0, perPage),
-      total: filteredTags.length,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        tags: filteredTags.slice(0, perPage),
+        total: filteredTags.length,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
   } catch (error) {
     console.error("Error fetching tags:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to fetch tags",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
+      { success: false, error: "Failed to fetch tags" },
       { status: 500 },
     );
   }

@@ -58,6 +58,18 @@ export function formatCompactNumber(num: number): string {
 }
 
 /**
+ * Get a post's primary category slug from its embedded terms (`_embedded["wp:term"][0]`).
+ * Mirrors the derivation used in PostCard / the post page, so post URLs are
+ * built consistently. Falls back to "uncategorized" when no category is embedded.
+ */
+export function getPrimaryCategorySlug(post: {
+  _embedded?: { "wp:term"?: Array<Array<{ slug?: string }>> };
+}): string {
+  const categories = post._embedded?.["wp:term"]?.[0] || [];
+  return categories[0]?.slug || "uncategorized";
+}
+
+/**
  * Transform internal WordPress URLs to external client-accessible URLs
  * @param url URL that might be internal (http://wordpress)
  * @returns External URL accessible from browser

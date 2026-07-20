@@ -47,7 +47,7 @@ export interface WP_REST_API_Post {
     | "status"
     | "video"
     | "audio";
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   categories: number[];
   tags: number[];
   view_count?: number; // Custom field from view-counter plugin
@@ -55,7 +55,8 @@ export interface WP_REST_API_Post {
   _embedded?: {
     author?: WP_REST_API_User[];
     "wp:featuredmedia"?: WP_REST_API_Media[];
-    "wp:term"?: WP_REST_API_Category[][];
+    // "wp:term" is an array of term groups: [0] is categories, [1] is tags, etc.
+    "wp:term"?: (WP_REST_API_Category | WP_REST_API_Tag)[][];
   };
 }
 
@@ -75,7 +76,7 @@ export interface WP_REST_API_User {
     "48": string;
     "96": string;
   };
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   // Additional fields when context=edit
   email?: string;
   registered_date?: string;
@@ -106,7 +107,7 @@ export interface WP_REST_API_Media {
   comment_status: "open" | "closed";
   ping_status: "open" | "closed";
   template: string;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
   description: {
     rendered: string;
   };
@@ -130,7 +131,7 @@ export interface WP_REST_API_Media {
         source_url: string;
       };
     };
-    image_meta?: Record<string, any>;
+    image_meta?: Record<string, unknown>;
   };
   post: number | null;
   source_url: string;
@@ -148,7 +149,7 @@ export interface WP_REST_API_Category {
   slug: string;
   taxonomy: "category";
   parent: number;
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 }
 
 /**
@@ -162,7 +163,7 @@ export interface WP_REST_API_Tag {
   name: string;
   slug: string;
   taxonomy: "post_tag";
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 }
 
 /**
@@ -186,7 +187,7 @@ export interface WP_REST_API_Comment {
   author_avatar_urls: {
     [size: string]: string;
   };
-  meta: Record<string, any>;
+  meta: Record<string, unknown>;
 }
 
 /**
@@ -195,7 +196,7 @@ export interface WP_REST_API_Comment {
  */
 export interface WP_REST_API_Page extends Omit<
   WP_REST_API_Post,
-  "categories" | "tags" | "sticky" | "format"
+  "categories" | "tags" | "sticky" | "format" | "view_count"
 > {
   parent: number;
   menu_order: number;

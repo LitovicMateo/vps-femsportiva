@@ -3,16 +3,35 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
+/**
+ * Decode HTML entities that WordPress emits in titles/excerpts (e.g. `&#8217;`,
+ * `&amp;`). Without this they render literally in the OG image. Edge runtime has
+ * no DOM parser, so decode the common named + numeric entities directly.
+ */
+function decodeEntities(str: string): string {
+  return str
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(parseInt(d, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&(apos|#039);/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&hellip;/g, "…")
+    .replace(/&amp;/g, "&");
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
-    const title = searchParams.get("title") || "My Awesome Blog";
-    const subtitle = searchParams.get("subtitle") || "";
-    const category = searchParams.get("category") || "";
-    const author = searchParams.get("author") || "";
+    const title = decodeEntities(searchParams.get("title") || "FEM Sportiva");
+    const subtitle = decodeEntities(searchParams.get("subtitle") || "");
+    const category = decodeEntities(searchParams.get("category") || "");
+    const author = decodeEntities(searchParams.get("author") || "");
     const date = searchParams.get("date") || "";
     const type = searchParams.get("type") || "default"; // default, post, category, author
+    const siteName = searchParams.get("siteName") || "FEM Sportiva";
 
     // Define colors based on type
     const bgGradients = {
@@ -63,7 +82,7 @@ export async function GET(request: NextRequest) {
           >
             📝
           </div>
-          My Awesome Blog
+          {siteName}
         </div>
 
         {/* Main Content */}
