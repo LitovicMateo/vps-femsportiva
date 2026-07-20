@@ -1,11 +1,18 @@
-version: "3.8"
-
 services:
   wordpress:
-    image: wordpress:latest
+    # Pinned to the 6.x major (PHP 8.3, Apache) so a pull can't silently jump to
+    # a new major; still receives 6.x minor/patch updates.
+    image: wordpress:6-php8.3-apache
     restart: always
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/wp-login.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     # do not publish WordPress HTTP port directly; nginx will proxy requests
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
@@ -15,19 +22,13 @@ services:
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
       WORDPRESS_URL: ${WORDPRESS_URL}
       WORDPRESS_INTERNAL_URL: ${WORDPRESS_INTERNAL_URL:-http://wordpress}
-      WORDPRESS_CONFIG_EXTRA: |
-        define('WP_ENVIRONMENT_TYPE', '${ENVIRONMENT}');
-        define('WP_HOME', '${WORDPRESS_URL}/wp');
-        define('WP_SITEURL', '${WORDPRESS_URL}/wp');
-        define('WP_CONTENT_URL', '${WORDPRESS_URL}/wp/wp-content');
-        @ini_set('upload_max_filesize', '2000M');
-        @ini_set('post_max_size', '2000M');
-        @ini_set('memory_limit', '512M');
-        @ini_set('max_execution_time', '600');
-        @ini_set('max_input_time', '600');
+      # WORDPRESS_CONFIG_EXTRA is defined per-environment overlay (not here)
+      # because Docker Compose replaces (not merges) env vars from overlays.
     volumes:
-      - ./data/uploads:/var/www/html/wp-content/uploads
       - ./data/ai1wm-unlimited.php:/var/www/html/wp-content/mu-plugins/ai1wm-unlimited.php:ro
+      - ./data/view-counter.php:/var/www/html/wp-content/mu-plugins/view-counter.php:ro
+      - ./data/revalidate-webhook.php:/var/www/html/wp-content/mu-plugins/revalidate-webhook.php:ro
+      - ./data/sync-urls.php:/var/www/html/wp-content/mu-plugins/sync-urls.php:ro
       - wordpress_data:/var/www/html
 
   database:
@@ -38,30 +39,49 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     volumes:
       - db_data:/var/lib/mysql
 
   frontend:
     build: ./frontend
-    ports:
-      - "3000:3000"
+    # Do NOT publish the Next.js port to the host in shared/prod environments;
+    # nginx proxies it. The dev overlay re-adds a "3000:3000" host mapping for
+    # local development only.
+    expose:
+      - "3000"
     environment:
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
       NODE_ENV: ${NODE_ENV}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
-      - wordpress
+      wordpress:
+        condition: service_healthy
 
   nginx:
-    image: nginx:stable-alpine
+    image: nginx:1.28-alpine
     restart: always
     ports:
       - "${NGINX_PORT}:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/proxy_headers_common.conf:/etc/nginx/conf.d/proxy_headers_common.conf:ro
     depends_on:
-      - frontend
-      - wordpress
+      frontend:
+        condition: service_healthy
+      wordpress:
+        condition: service_healthy
 
 volumes:
   db_data:

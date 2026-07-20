@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     image: node:20-alpine
@@ -7,6 +5,7 @@ services:
     command: sh -c "npm ci && npm run dev -- -H 0.0.0.0"
     volumes:
       - ./frontend:/app
+      # Anonymous volume — run 'docker compose down -v' after changing package.json
       - /app/node_modules
       - /app/.next
     ports:
@@ -15,20 +14,34 @@ services:
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      REVALIDATION_SECRET: ${REVALIDATION_SECRET:-dev-revalidation-secret}
+      VIEWS_SECRET: ${VIEWS_SECRET:-dev-views-secret}
       NODE_ENV: development
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
-    depends_on:
-      - wordpress
+    # depends_on (condition: service_healthy) is defined in the base compose file.
 
   wordpress:
     restart: "no"
-    ports:
-      - "8080:80" # Expose WordPress directly (no Nginx)
+    # ports:
+    #   - "8080:80" # Expose WordPress directly (no Nginx)
     volumes:
       - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+      - ./data/uploads:/var/www/html/wp-content/uploads
     environment:
       WORDPRESS_DEBUG: "1"
+      NEXT_REVALIDATE_URL: http://frontend:3000/api/revalidate
+      NEXT_REVALIDATE_SECRET: ${REVALIDATION_SECRET:-dev-revalidation-secret}
+      VIEWS_SECRET: ${VIEWS_SECRET:-dev-views-secret}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'development');
+        define('WP_HOME', '${WORDPRESS_URL}');
+        define('WP_SITEURL', '${WORDPRESS_URL}');
+        @ini_set('upload_max_filesize', '1200M');
+        @ini_set('post_max_size', '1200M');
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '600');
+        @ini_set('max_input_time', '600');
 
   database:
     restart: "no"

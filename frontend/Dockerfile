@@ -5,10 +5,12 @@ WORKDIR /app
 # Accept build arguments for Next.js public env vars
 ARG NEXT_PUBLIC_WORDPRESS_API_URL
 ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_WORDPRESS_URL
 
 # Set environment variables for the build process
 ENV NEXT_PUBLIC_WORDPRESS_API_URL=${NEXT_PUBLIC_WORDPRESS_API_URL}
 ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+ENV NEXT_PUBLIC_WORDPRESS_URL=${NEXT_PUBLIC_WORDPRESS_URL}
 
 # Copy package files first for better caching
 COPY package*.json ./
@@ -23,27 +25,14 @@ FROM node:20-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy built application
-COPY --from=builder /app/package*.json ./
+# Copy the standalone server. Next's standalone output already bundles the
+# minimal runtime node_modules and its own package.json, so there is no second
+# `npm ci` here (the previous one re-installed the full dependency tree on top
+# of the bundle — wasted layers and a larger image). `public` and `.next/static`
+# must still be copied alongside it manually.
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-
-# Create next.config.mjs from the TypeScript version (converted to JS)
-RUN echo "/** @type {import('next').NextConfig} */" > next.config.mjs && \
-    echo "const nextConfig = {" >> next.config.mjs && \
-    echo "  output: 'standalone'," >> next.config.mjs && \
-    echo "  images: {" >> next.config.mjs && \
-    echo "    remotePatterns: [" >> next.config.mjs && \
-    echo "      { protocol: 'http', hostname: '**' }," >> next.config.mjs && \
-    echo "      { protocol: 'https', hostname: '**' }" >> next.config.mjs && \
-    echo "    ]" >> next.config.mjs && \
-    echo "  }" >> next.config.mjs && \
-    echo "};" >> next.config.mjs && \
-    echo "export default nextConfig;" >> next.config.mjs
-
-# Install production dependencies only
-RUN npm ci --only=production --silent
 
 # Add non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
@@ -54,4 +43,11 @@ USER nextjs
 
 EXPOSE 3000
 ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Liveness probe (also declared in the compose overlays; kept here so the image
+# is self-describing for `docker run` / base compose).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1
+
 CMD ["node", "server.js"]

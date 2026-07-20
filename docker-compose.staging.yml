@@ -1,12 +1,23 @@
-version: "3.8"
-
 services:
   wordpress:
     restart: unless-stopped
     volumes:
       - ./php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
+      - ./data/uploads:/var/www/html/wp-content/uploads
     environment:
       WORDPRESS_DEBUG: "0"
+      NEXT_REVALIDATE_URL: http://frontend:3000/api/revalidate
+      NEXT_REVALIDATE_SECRET: ${REVALIDATION_SECRET}
+      VIEWS_SECRET: ${VIEWS_SECRET}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'staging');
+        define('WP_HOME', '${WORDPRESS_URL}');
+        define('WP_SITEURL', '${WORDPRESS_URL}');
+        @ini_set('upload_max_filesize', '1200M');
+        @ini_set('post_max_size', '1200M');
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '600');
+        @ini_set('max_input_time', '600');
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/wp-login.php"]
       interval: 30s
@@ -44,6 +55,8 @@ services:
       NODE_ENV: production
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      REVALIDATION_SECRET: ${REVALIDATION_SECRET}
+      VIEWS_SECRET: ${VIEWS_SECRET}
     healthcheck:
       test:
         [
@@ -63,3 +76,16 @@ services:
     restart: unless-stopped
     ports:
       - "${NGINX_PORT}:80"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3

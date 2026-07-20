@@ -6,7 +6,7 @@
 # Usage: ./restore-db.sh [environment] [backup-file]
 # Example: ./restore-db.sh staging ./backups/backup_prod_20260116_120000.sql.gz
 
-set -e
+set -euo pipefail
 
 # Check arguments
 if [ "$#" -lt 2 ]; then
@@ -30,8 +30,21 @@ if [ ! -f "$BACKUP_FILE" ]; then
     exit 1
 fi
 
-# Load environment variables
-export $(grep -v '^#' "$ENV_FILE" | xargs)
+# Read only the values we need (see note in backup-db.sh — do not source salts).
+read_env() {
+    grep -E "^$1=" "$ENV_FILE" | head -n1 | cut -d= -f2- || echo ''
+}
+
+MYSQL_DATABASE="$(read_env MYSQL_DATABASE)"
+MYSQL_ROOT_PASSWORD="$(read_env MYSQL_ROOT_PASSWORD)"
+
+if [ -z "$MYSQL_DATABASE" ] || [ -z "$MYSQL_ROOT_PASSWORD" ]; then
+    echo "Error: MYSQL_DATABASE and MYSQL_ROOT_PASSWORD must be set in $ENV_FILE"
+    exit 1
+fi
+
+# Scope compose to this environment's overlay + env file (see backup-db.sh).
+COMPOSE=(docker compose -f docker-compose.yml -f "docker-compose.${ENV}.yml" --env-file "$ENV_FILE")
 
 echo "WARNING: This will replace the current ${ENV} database!"
 echo "Database: ${MYSQL_DATABASE}"
@@ -45,24 +58,18 @@ fi
 
 echo "Restoring database..."
 
-# Restore backup
+# `pipefail` makes a failed gunzip (corrupt/truncated backup) abort the restore
+# instead of silently piping an empty stream into mysql and reporting success.
 if [[ "$BACKUP_FILE" == *.gz ]]; then
-    # Gzipped backup
-    gunzip < "$BACKUP_FILE" | docker-compose exec -T database mysql \
+    gunzip < "$BACKUP_FILE" | "${COMPOSE[@]}" exec -T database mysql \
         -u root \
         -p"${MYSQL_ROOT_PASSWORD}" \
         "${MYSQL_DATABASE}"
 else
-    # Plain SQL backup
-    docker-compose exec -T database mysql \
+    "${COMPOSE[@]}" exec -T database mysql \
         -u root \
         -p"${MYSQL_ROOT_PASSWORD}" \
         "${MYSQL_DATABASE}" < "$BACKUP_FILE"
 fi
 
-if [ $? -eq 0 ]; then
-    echo "✓ Database restored successfully"
-else
-    echo "✗ Restore failed"
-    exit 1
-fi
+echo "✓ Database restored successfully"

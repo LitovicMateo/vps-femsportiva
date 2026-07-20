@@ -1,4 +1,14 @@
-.PHONY: help dev staging prod dev-build staging-build prod-build logs down clean backup-db restore-db sync-staging init-ssl
+.PHONY: help dev staging prod dev-build staging-build prod-build \
+	logs logs-wp logs-frontend logs-nginx down clean \
+	backup-db restore-db sync-staging init-ssl \
+	shell-wp shell-db shell-frontend
+
+# Environment for utility targets (logs/down/clean/shell-*). Override per run,
+# e.g. `make logs ENV=prod` or `make down ENV=staging`. Defaults to dev so a
+# bare `make down` doesn't silently target a base-only project (missing
+# -f/--env-file), which emits "variable not set" warnings and can miss the stack.
+ENV ?= dev
+COMPOSE = docker compose -f docker-compose.yml -f docker-compose.$(ENV).yml --env-file .env.$(ENV)
 
 # Default target - show help
 help:
@@ -16,12 +26,12 @@ help:
 	@echo "  make staging-build    - Build and start staging"
 	@echo "  make prod-build       - Build and start production"
 	@echo ""
-	@echo "Utility Commands:"
-	@echo "  make logs             - Show logs (all services)"
-	@echo "  make logs-wp          - Show WordPress logs"
+	@echo "Utility Commands (scope with ENV=dev|staging|prod, default dev):"
+	@echo "  make logs [ENV=]      - Show logs (all services)"
+	@echo "  make logs-wp [ENV=]   - Show WordPress logs"
 	@echo "  make logs-frontend    - Show frontend logs"
-	@echo "  make down             - Stop all services"
-	@echo "  make clean            - Stop and remove volumes"
+	@echo "  make down [ENV=]      - Stop all services"
+	@echo "  make clean [ENV=]     - Stop and remove volumes"
 	@echo ""
 	@echo "Database Management:"
 	@echo "  make backup-db ENV=dev    - Backup database (ENV: dev/staging/prod)"
@@ -35,54 +45,54 @@ help:
 # Development environment
 dev:
 	@echo "Starting development environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up -d
 
 dev-build:
 	@echo "Building and starting development environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up --build
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up --build
 
 # Staging environment
 staging:
 	@echo "Starting staging environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d
 
 staging-build:
 	@echo "Building and starting staging environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d --build
+	docker compose -f docker-compose.yml -f docker-compose.staging.yml --env-file .env.staging up -d --build
 
 # Production environment
 prod:
 	@echo "Starting production environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d
 
 prod-build:
 	@echo "Building and starting production environment..."
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
-# Logs
+# Logs (scope with ENV=dev|staging|prod, default dev)
 logs:
-	docker-compose logs -f
+	$(COMPOSE) logs -f
 
 logs-wp:
-	docker-compose logs -f wordpress
+	$(COMPOSE) logs -f wordpress
 
 logs-frontend:
-	docker-compose logs -f frontend
+	$(COMPOSE) logs -f frontend
 
 logs-nginx:
-	docker-compose logs -f nginx
+	$(COMPOSE) logs -f nginx
 
-# Stop services
+# Stop services (scope with ENV=dev|staging|prod, default dev)
 down:
-	@echo "Stopping all services..."
-	docker-compose down
+	@echo "Stopping all services for ENV=$(ENV)..."
+	$(COMPOSE) down
 
-# Clean everything (including volumes)
+# Clean everything (including volumes) (scope with ENV=dev|staging|prod)
 clean:
-	@echo "WARNING: This will delete all data in Docker volumes!"
+	@echo "WARNING: This will delete all data in Docker volumes for ENV=$(ENV)!"
 	@read -p "Are you sure? (yes/no): " confirm; \
 	if [ "$$confirm" = "yes" ]; then \
-		docker-compose down -v; \
+		$(COMPOSE) down -v; \
 		echo "✓ Cleaned up"; \
 	else \
 		echo "Cancelled"; \
@@ -115,12 +125,12 @@ init-ssl:
 	@echo "Initializing SSL certificates..."
 	@bash scripts/init-ssl.sh
 
-# Shell access
+# Shell access (scope with ENV=dev|staging|prod, default dev)
 shell-wp:
-	docker-compose exec wordpress bash
+	$(COMPOSE) exec wordpress bash
 
 shell-db:
-	docker-compose exec database bash
+	$(COMPOSE) exec database bash
 
 shell-frontend:
-	docker-compose exec frontend sh
+	$(COMPOSE) exec frontend sh
