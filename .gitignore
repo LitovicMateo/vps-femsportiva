@@ -1,8 +1,8 @@
-# Environment files (keep examples, ignore actual .env)
+# Environment files — NEVER commit real env files (they contain secrets).
+# Only .env.example (placeholders) is tracked; all real .env.* are ignored.
 .env
-.env.local
-# Note: .env.dev, .env.staging, .env.prod are committed as templates
-# Copy one to .env on your server and update with actual secrets
+.env.*
+!.env.example
 
 # WordPress uploads
 data/uploads/*
