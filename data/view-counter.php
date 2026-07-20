@@ -18,7 +18,9 @@ add_action('rest_api_init', function () {
     register_rest_route('custom/v1', '/post-view/(?P<id>\d+)', [
         'methods'  => 'POST',
         'callback' => 'vps_increment_post_view_count',
-        'permission_callback' => '__return_true', // Public endpoint
+        // Writes must come from the trusted Next.js proxy, not directly from
+        // the public internet. See vps_view_write_permission().
+        'permission_callback' => 'vps_view_write_permission',
         'args' => [
             'id' => [
                 'validate_callback' => function($param) {
@@ -42,6 +44,36 @@ add_action('rest_api_init', function () {
         ],
     ]);
 });
+
+/**
+ * Permission gate for the view-write endpoint.
+ *
+ * The write endpoint is reachable directly through Nginx (`/wp-json/...`), so
+ * without a gate any client could inflate counts and amplify DB writes. We
+ * require a shared bearer token that only the server-side Next.js proxy knows
+ * (env var VIEWS_SECRET, mirrored on the Next.js side). If no secret is
+ * configured we fall back to open (backward compatible), but every environment
+ * wires one via docker-compose.
+ */
+function vps_view_write_permission($request) {
+    $secret = getenv('VIEWS_SECRET');
+
+    if (empty($secret)) {
+        return true; // No secret configured — legacy open behavior.
+    }
+
+    $auth = $request->get_header('authorization');
+    if ($auth && preg_match('/^Bearer\s+(.+)$/i', trim($auth), $m)
+        && hash_equals($secret, trim($m[1]))) {
+        return true;
+    }
+
+    return new WP_Error(
+        'rest_forbidden',
+        'Missing or invalid view token',
+        ['status' => 403]
+    );
+}
 
 /**
  * Increment post view count with basic spam prevention
@@ -114,8 +146,9 @@ function vps_get_post_view_count($request) {
 add_action('rest_api_init', function() {
     register_rest_field('post', 'view_count', [
         'get_callback' => function($post) {
-            $count = get_post_meta($post['id'], 'post_views_count', true);
-            return $count ? intval($count) : 0;
+            // intval() maps unset ('') and stored '0' to 0 correctly; the old
+            // `$count ? intval($count) : 0` relied on PHP treating '0' as falsy.
+            return intval(get_post_meta($post['id'], 'post_views_count', true));
         },
         'update_callback' => null,
         'schema' => [
@@ -127,21 +160,33 @@ add_action('rest_api_init', function() {
 });
 
 /**
- * Get client IP address (handles proxies)
+ * Get the client IP address for view dedup.
+ *
+ * Only trusts `X-Real-IP`, which the reverse proxy controls: Nginx overwrites
+ * it with `$remote_addr` on direct hits, and the Next.js proxy forwards the
+ * real visitor IP for app traffic. We deliberately do NOT trust `HTTP_CLIENT_IP`
+ * or arbitrary `X-Forwarded-For` entries — both are fully attacker-controlled
+ * and would let a client rotate a header per request to defeat dedup and
+ * inflate the count / amplify DB writes. Falls back to `REMOTE_ADDR`.
  */
 function vps_get_client_ip() {
-    $ip = '';
-    
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ip = $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        // Handle multiple IPs (take the first one)
-        $ip = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
-    } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-        $ip = $_SERVER['REMOTE_ADDR'];
+    $candidates = [];
+
+    if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+        $candidates[] = $_SERVER['HTTP_X_REAL_IP'];
     }
-    
-    return filter_var(trim($ip), FILTER_VALIDATE_IP) ? trim($ip) : '0.0.0.0';
+    if (!empty($_SERVER['REMOTE_ADDR'])) {
+        $candidates[] = $_SERVER['REMOTE_ADDR'];
+    }
+
+    foreach ($candidates as $ip) {
+        $ip = trim($ip);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+    }
+
+    return '0.0.0.0';
 }
 
 /**
