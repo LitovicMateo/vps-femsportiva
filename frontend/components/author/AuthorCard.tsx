@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { WP_REST_API_User } from "@/types/wordpress";
 import styles from "./AuthorCard.module.css";
 
@@ -23,10 +24,13 @@ export default function AuthorCard({ author, postCount }: AuthorCardProps) {
     <Link href={`/authors/${authorSlug}`} className={styles.card}>
       <div className={styles.content}>
         {author.avatar_urls && (
-          <img
+          <Image
             src={author.avatar_urls["96"]}
             alt={author.name}
+            width={64}
+            height={64}
             className={styles.avatar}
+            unoptimized
           />
         )}
         <div className={styles.info}>

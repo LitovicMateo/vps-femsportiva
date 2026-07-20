@@ -1,4 +1,5 @@
-import { fetchPostsByTagAPI } from "@/lib/api";
+import { fetchPostsByTagAPI, fetchSiteSettingsAPI } from "@/lib/api";
+import { fetchTags } from "@/lib/wordpress";
 import PostCard from "@/components/post/PostCard";
 import Pagination from "@/components/ui/Pagination";
 import Footer from "@/components/layout/Footer";
@@ -8,18 +9,25 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-
 interface TagPageProps {
   params: { slug: string };
   searchParams: { page?: string };
+}
+
+// Pre-render each tag archive at build time; unknown tags render on-demand.
+export async function generateStaticParams() {
+  const tags = await fetchTags().catch(() => []);
+  return tags.map((tag) => ({ slug: tag.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: TagPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const data = await fetchPostsByTagAPI(resolvedParams.slug, 1, 1);
+  const [data, settings] = await Promise.all([
+    fetchPostsByTagAPI(resolvedParams.slug, 1, 1),
+    fetchSiteSettingsAPI(),
+  ]);
   const tag = data.tag;
 
   if (!tag) {
@@ -30,6 +38,8 @@ export async function generateMetadata({
 
   const description =
     tag.description || `Pregledajte sve objave označene sa ${tag.name}`;
+  const siteName = settings.siteTitle || "FEM Sportiva";
+  const ogImageUrl = `/api/og?type=category&title=${encodeURIComponent(tag.name)}&subtitle=${encodeURIComponent(description)}&siteName=${encodeURIComponent(siteName)}`;
 
   return {
     title: tag.name,
@@ -39,11 +49,16 @@ export async function generateMetadata({
       description: description,
       type: "website",
       url: `/tags/${resolvedParams.slug}`,
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: tag.name,
       description: description,
+      images: [ogImageUrl],
+    },
+    alternates: {
+      canonical: `/tags/${resolvedParams.slug}`,
     },
   };
 }
@@ -88,7 +103,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
           "@type": "ListItem",
           position: index + 1,
           url: `${process.env.NEXT_PUBLIC_SITE_URL}/${categorySlug}/${post.slug}`,
-          name: post.title,
+          name: post.title?.rendered || "",
         };
       }),
     },

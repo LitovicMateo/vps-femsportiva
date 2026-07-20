@@ -6,8 +6,6 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   title: "Autori",
   description: "Upoznajte sve autore koji doprinose našem blogu",
@@ -21,6 +19,9 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Autori",
     description: "Upoznajte sve autore koji doprinose našem blogu",
+  },
+  alternates: {
+    canonical: "/authors",
   },
 };
 

@@ -15,32 +15,19 @@ export default function ViewCounter({ postId, slug }: ViewCounterProps) {
   const hasTracked = useRef(false);
 
   useEffect(() => {
-    // Only track once per component mount
+    // Only track once per component mount. Set the guard BEFORE the async call
+    // so React StrictMode's double-invoke (dev) can't fire two requests.
     if (hasTracked.current) return;
+    hasTracked.current = true;
 
     const trackView = async () => {
       try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
-          "http://localhost:8080/wp-json";
-        const response = await fetch(
-          `${apiUrl}/custom/v1/post-view/${postId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+        await fetch(`/api/views/${postId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.incremented) {
-            console.log(
-              `View tracked for post ${slug}: ${data.views} total views`,
-            );
-          }
-        }
+        });
       } catch (error) {
         // Silently fail - view tracking shouldn't break the page
         console.error("Failed to track view:", error);
@@ -48,7 +35,6 @@ export default function ViewCounter({ postId, slug }: ViewCounterProps) {
     };
 
     trackView();
-    hasTracked.current = true;
   }, [postId, slug]);
 
   // This component doesn't render anything

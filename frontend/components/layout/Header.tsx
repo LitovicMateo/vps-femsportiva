@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +35,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -66,6 +68,10 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   }, [lastScrollY]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -77,12 +83,12 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   }, []);
 
   useEffect(() => {
-    if (isMenuOpen) {
+    if (isMobile && isMenuOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
     }
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isMobile]);
 
   const socialLinks = [
     { icon: FaFacebookF, url: "https://facebook.com", label: "Facebook" },
@@ -285,7 +291,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
 
         {/* Mobile Menu Button */}
         {isMobile && (
-          <>
+          <div className={styles.mobileActions}>
             <ThemeToggle />
             <motion.button
               className={styles.menuButton}
@@ -295,91 +301,95 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
             >
               {isMenuOpen ? <HiX size={28} /> : <HiMenu size={28} />}
             </motion.button>
-          </>
+          </div>
         )}
       </div>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMobile && isMenuOpen && (
-          <>
-            <motion.div
-              className={styles.overlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeMenu}
-            />
-            <motion.div
-              className={styles.mobileMenu}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
-            >
-              {/* Mobile Search Form */}
-              <div className={styles.mobileSearchContainer}>
-                <form onSubmit={handleSearch} className={styles.searchForm}>
-                  <input
-                    type="text"
-                    placeholder="Pretraži..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className={styles.searchInput}
-                    aria-label="Pretraži"
-                  />
-                  <button
-                    type="submit"
-                    className={styles.searchButton}
-                    disabled={searchTerm.trim().length < 3}
-                    aria-label="Search"
-                  >
-                    <FaSearch />
-                  </button>
-                </form>
-              </div>
-
-              <nav className={styles.mobileNav}>
-                <Link
-                  href="/"
-                  className={styles.mobileNavLink}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {isMobile && isMenuOpen && (
+              <>
+                <motion.div
+                  className={styles.overlay}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   onClick={closeMenu}
+                />
+                <motion.div
+                  className={styles.mobileMenu}
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "tween", duration: 0.3 }}
                 >
-                  Početna
-                </Link>
+                  {/* Mobile Search Form */}
+                  <div className={styles.mobileSearchContainer}>
+                    <form onSubmit={handleSearch} className={styles.searchForm}>
+                      <input
+                        type="text"
+                        placeholder="Pretraži..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                        aria-label="Pretraži"
+                      />
+                      <button
+                        type="submit"
+                        className={styles.searchButton}
+                        disabled={searchTerm.trim().length < 3}
+                        aria-label="Search"
+                      >
+                        <FaSearch />
+                      </button>
+                    </form>
+                  </div>
 
-                {sortedCategories.map((category) => (
-                  <Link
-                    key={category.id}
-                    href={`/${category.slug}`}
-                    className={styles.mobileNavLink}
-                    onClick={closeMenu}
-                  >
-                    {category.name}
-                  </Link>
-                ))}
-              </nav>
+                  <nav className={styles.mobileNav}>
+                    <Link
+                      href="/"
+                      className={styles.mobileNavLink}
+                      onClick={closeMenu}
+                    >
+                      Početna
+                    </Link>
 
-              <div className={styles.mobileSocial}>
-                {socialLinks.map((social) => (
-                  <motion.a
-                    key={social.label}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.mobileSocialIcon}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label={social.label}
-                  >
-                    <social.icon />
-                  </motion.a>
-                ))}
-              </div>
-            </motion.div>
-          </>
+                    {sortedCategories.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/${category.slug}`}
+                        className={styles.mobileNavLink}
+                        onClick={closeMenu}
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </nav>
+
+                  <div className={styles.mobileSocial}>
+                    {socialLinks.map((social) => (
+                      <motion.a
+                        key={social.label}
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.mobileSocialIcon}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={social.label}
+                      >
+                        <social.icon />
+                      </motion.a>
+                    ))}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>,
+          document.body,
         )}
-      </AnimatePresence>
     </header>
   );
 };

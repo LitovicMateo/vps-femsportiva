@@ -71,7 +71,7 @@ export default function HeroSection({ post }: HeroSectionProps) {
             )}
             <span className={styles.separator}>•</span>
             <time className={styles.date}>
-              {new Date(post.date).toLocaleDateString("en-US", {
+              {new Date(post.date).toLocaleDateString("hr-HR", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

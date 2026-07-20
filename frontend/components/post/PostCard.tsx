@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { WP_REST_API_Post } from "@/types/wordpress";
 import {
   calculateReadingTime,
@@ -60,7 +61,13 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
       <article className={`${styles.postCard} ${styles.featured}`}>
         {featuredImage && (
           <div className={styles.featuredImage}>
-            <img src={featuredImage} alt={title} />
+            <Image
+              src={featuredImage}
+              alt={title}
+              fill
+              sizes="(max-width: 768px) 100vw, 66vw"
+              unoptimized
+            />
           </div>
         )}
         <div className={styles.featuredContent}>
@@ -134,7 +141,14 @@ export default function PostCard({ post, featured = false }: PostCardProps) {
             href={`/${categorySlug}/${post.slug}`}
             className={styles.thumbnail}
           >
-            <img src={featuredImage} alt={title} />
+            <Image
+              src={featuredImage}
+              alt={title}
+              width={150}
+              height={120}
+              sizes="150px"
+              unoptimized
+            />
           </Link>
         )}
         <div className={styles.regularBody}>

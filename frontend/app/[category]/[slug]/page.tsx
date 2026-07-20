@@ -1,4 +1,5 @@
-import { fetchPostBySlugAPI, fetchPostsAPI } from "@/lib/api";
+import { fetchPostBySlugAPI, fetchPostsAPI, fetchSiteSettingsAPI } from "@/lib/api";
+import { fetchPosts } from "@/lib/wordpress";
 import PostCard from "@/components/post/PostCard";
 import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
@@ -8,25 +9,43 @@ import ViewCounter from "@/components/post/ViewCounter";
 import {
   calculateReadingTime,
   formatCompactNumber,
+  getPrimaryCategorySlug,
   transformWordPressUrl,
 } from "@/lib/utils";
 import { FaClock, FaEye } from "react-icons/fa";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-
 interface PostPageProps {
   params: { category: string; slug: string };
+}
+
+// Pre-render the most recent posts (bounded to the latest 100) at build time;
+// older posts render on-demand via ISR. Category segment matches the embedded
+// primary term, same as the sitemap and the runtime route.
+export async function generateStaticParams() {
+  const { posts } = await fetchPosts({ perPage: 100 }).catch(() => ({
+    posts: [],
+    total: 0,
+    totalPages: 0,
+  }));
+  return posts.map((post) => ({
+    category: getPrimaryCategorySlug(post),
+    slug: post.slug,
+  }));
 }
 
 export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const post = await fetchPostBySlugAPI(resolvedParams.slug);
+  const [post, settings] = await Promise.all([
+    fetchPostBySlugAPI(resolvedParams.slug),
+    fetchSiteSettingsAPI(),
+  ]);
 
   if (!post) {
     return {
@@ -49,7 +68,8 @@ export async function generateMetadata({
     plainText.substring(0, 160) + (plainText.length > 160 ? "..." : "");
 
   // Generate dynamic OG image URL
-  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title.rendered)}&category=${encodeURIComponent(postCategory?.name || "")}&author=${encodeURIComponent(author?.name || "")}&type=post`;
+  const siteName = settings?.siteTitle || "FEM Sportiva";
+  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title.rendered)}&category=${encodeURIComponent(postCategory?.name || "")}&author=${encodeURIComponent(author?.name || "")}&type=post&siteName=${encodeURIComponent(siteName)}`;
 
   return {
     title: post.title.rendered,
@@ -72,6 +92,9 @@ export async function generateMetadata({
       title: post.title.rendered,
       description: description,
       images: featuredImage ? [featuredImage] : [ogImageUrl],
+    },
+    alternates: {
+      canonical: `/${resolvedParams.category}/${resolvedParams.slug}`,
     },
   };
 }
@@ -139,10 +162,10 @@ export default async function PostPage({ params }: PostPageProps) {
       : undefined,
     publisher: {
       "@type": "Organization",
-      name: "Moj Veličanstven Blog",
+      name: "FEM Sportiva",
       logo: {
         "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo_light.svg`,
       },
     },
     mainEntityOfPage: {
@@ -176,7 +199,14 @@ export default async function PostPage({ params }: PostPageProps) {
         <article className={styles.article}>
           {featuredImage && (
             <div className={styles.featuredImage}>
-              <img src={featuredImage} alt={post.title.rendered} />
+              <Image
+                src={featuredImage}
+                alt={post.title.rendered}
+                fill
+                sizes="(max-width: 768px) 100vw, 800px"
+                priority
+                unoptimized
+              />
             </div>
           )}
 
@@ -201,10 +231,13 @@ export default async function PostPage({ params }: PostPageProps) {
                 <div className={styles.authorInfo}>
                   {author.avatar_urls && (
                     <Link href={`/authors/${author.slug}`}>
-                      <img
+                      <Image
                         src={author.avatar_urls["48"]}
                         alt={author.name}
+                        width={48}
+                        height={48}
                         className={styles.avatar}
+                        unoptimized
                       />
                     </Link>
                   )}

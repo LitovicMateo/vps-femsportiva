@@ -209,6 +209,12 @@
 }
 
 /* Mobile Menu Button */
+.mobileActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .menuButton {
   display: none;
   background: none;

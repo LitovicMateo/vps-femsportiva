@@ -1,18 +1,24 @@
 import { fetchPostsByAuthorAPI } from "@/lib/api";
+import { fetchAuthors } from "@/lib/wordpress";
 import PostCard from "@/components/post/PostCard";
 import Pagination from "@/components/ui/Pagination";
 import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-
 interface AuthorPageProps {
   params: { author: string };
   searchParams: { page?: string };
+}
+
+// Pre-render each author archive at build time; unknown authors render on-demand.
+export async function generateStaticParams() {
+  const authors = await fetchAuthors().catch(() => []);
+  return authors.map((author) => ({ author: author.slug }));
 }
 
 export async function generateMetadata({
@@ -47,6 +53,9 @@ export async function generateMetadata({
       title: `Objave autora ${author.name}`,
       description: description,
       images: author.avatar_urls ? [author.avatar_urls["96"]] : undefined,
+    },
+    alternates: {
+      canonical: `/authors/${resolvedParams.author}`,
     },
   };
 }
@@ -114,10 +123,13 @@ export default async function AuthorPage({
           </Link>
           <div className={styles.authorInfo}>
             {author.avatar_urls && (
-              <img
+              <Image
                 src={author.avatar_urls["96"]}
                 alt={author.name}
+                width={96}
+                height={96}
                 className={styles.avatar}
+                unoptimized
               />
             )}
             <div className={styles.authorDetails}>

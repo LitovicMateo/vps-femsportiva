@@ -1,4 +1,5 @@
-import { fetchPostsByCategoryAPI } from "@/lib/api";
+import { fetchPostsByCategoryAPI, fetchSiteSettingsAPI } from "@/lib/api";
+import { fetchCategories } from "@/lib/wordpress";
 import PostCard from "@/components/post/PostCard";
 import Pagination from "@/components/ui/Pagination";
 import Footer from "@/components/layout/Footer";
@@ -8,18 +9,26 @@ import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-
 interface CategoryPageProps {
   params: { category: string };
   searchParams: { page?: string };
+}
+
+// Pre-render each category archive at build time; unknown categories still
+// render on-demand via ISR (dynamicParams defaults to true).
+export async function generateStaticParams() {
+  const categories = await fetchCategories().catch(() => []);
+  return categories.map((category) => ({ category: category.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const data = await fetchPostsByCategoryAPI(resolvedParams.category, 1, 1);
+  const [data, settings] = await Promise.all([
+    fetchPostsByCategoryAPI(resolvedParams.category, 1, 1),
+    fetchSiteSettingsAPI(),
+  ]);
   const category = data.category;
 
   if (!category) {
@@ -31,6 +40,8 @@ export async function generateMetadata({
   const description =
     category.description ||
     `Pregledajte sve objave u kategoriji ${category.name}`;
+  const siteName = settings.siteTitle || "FEM Sportiva";
+  const ogImageUrl = `/api/og?type=category&title=${encodeURIComponent(category.name)}&subtitle=${encodeURIComponent(description)}&siteName=${encodeURIComponent(siteName)}`;
 
   return {
     title: category.name,
@@ -40,11 +51,16 @@ export async function generateMetadata({
       description: description,
       type: "website",
       url: `/${resolvedParams.category}`,
+      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: category.name,
       description: description,
+      images: [ogImageUrl],
+    },
+    alternates: {
+      canonical: `/${resolvedParams.category}`,
     },
   };
 }
@@ -88,7 +104,7 @@ export default async function CategoryPage({
         "@type": "ListItem",
         position: index + 1,
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}/${post.slug}`,
-        name: post.title,
+        name: post.title?.rendered || "",
       })),
     },
   };

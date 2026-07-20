@@ -1,27 +1,16 @@
-import { fetchPosts } from "@/lib/wordpress";
+import { fetchPosts, fetchSiteInfo } from "@/lib/wordpress";
 
 export async function GET() {
   try {
-    // Fetch settings to get RSS configuration
-    const settingsRes = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/settings`,
-      {
-        next: { revalidate: 3600 },
-      },
-    );
-    const settingsData = await settingsRes.json();
-    const settings = settingsData.success ? settingsData.data : null;
+    // Fetch settings directly from WordPress (avoid self-fetch loop)
+    const siteInfo = await fetchSiteInfo();
 
     // Get RSS settings
-    const rssTitle = settings?.seo?.rssTitle || "My Awesome Blog RSS Feed";
-    const rssDescription =
-      settings?.seo?.rssDescription || "Latest posts from My Awesome Blog";
-    const itemCount = settings?.seo?.rssItemCount || 20;
-    const siteUrl =
-      settings?.siteUrl ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      "http://localhost:3000";
-    const siteName = settings?.siteTitle || "My Awesome Blog";
+    const rssTitle = siteInfo?.name ? `${siteInfo.name} RSS Feed` : "RSS Feed";
+    const rssDescription = siteInfo?.description || "Latest posts";
+    const itemCount = 20;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteName = siteInfo?.name || "Blog";
 
     // Fetch recent posts
     const postsData = await fetchPosts({ perPage: itemCount });
@@ -30,19 +19,19 @@ export async function GET() {
     // Build RSS XML
     const rssItems = posts
       .map((post: any) => {
-        const postUrl = `${siteUrl}/${post.category?.slug || "uncategorized"}/${post.slug}`;
-        const author = post.author?.name || "Unknown";
         const categories = post._embedded?.["wp:term"]?.[0] || [];
+        const postUrl = `${siteUrl}/${categories[0]?.slug || "uncategorized"}/${post.slug}`;
+        const author = post._embedded?.author?.[0]?.name || "Unknown";
         const featuredImage =
           post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "";
 
         return `
     <item>
-      <title><![CDATA[${post.title}]]></title>
+      <title><![CDATA[${post.title.rendered}]]></title>
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
-      <description><![CDATA[${post.excerpt.replace(/<[^>]*>/g, "")}]]></description>
-      <content:encoded><![CDATA[${post.content}]]></content:encoded>
+      <description><![CDATA[${post.excerpt.rendered.replace(/<[^>]*>/g, "")}]]></description>
+      <content:encoded><![CDATA[${post.content.rendered}]]></content:encoded>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       <dc:creator><![CDATA[${author}]]></dc:creator>
       ${categories.map((cat: any) => `<category><![CDATA[${cat.name}]]></category>`).join("\n      ")}
@@ -61,7 +50,7 @@ export async function GET() {
     <title><![CDATA[${rssTitle}]]></title>
     <link>${siteUrl}</link>
     <description><![CDATA[${rssDescription}]]></description>
-    <language>en-US</language>
+    <language>hr-HR</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml" />
     <generator>Next.js</generator>

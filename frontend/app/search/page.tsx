@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import SearchHeader from "@/components/search/SearchHeader";
 import SearchResults from "@/components/search/SearchResults";
+import { searchPostsAPI } from "@/lib/api";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -17,8 +18,20 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
   return {
     title: query ? `Rezultati pretraživanja za "${query}"` : "Pretraživanje",
     description: query
-      ? `Rezultati pretraživanja za "${query}" na Mojem Blogu`
+      ? `Rezultati pretraživanja za "${query}" na FEM Sportiva`
       : "Pretraži blog",
+    robots: { index: false, follow: false },
+    openGraph: {
+      title: query ? `Rezultati pretraživanja za "${query}"` : "Pretraživanje",
+      description: query
+        ? `Rezultati pretraživanja za "${query}" na FEM Sportiva`
+        : "Pretraži blog",
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title: query ? `Rezultati pretraživanja za "${query}"` : "Pretraživanje",
+    },
   };
 }
 
@@ -48,28 +61,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     );
   }
 
-  // Fetch search results from API
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const searchUrl = `${baseUrl}/api/search?q=${encodeURIComponent(query)}&type=post&page=${currentPage}&per_page=${perPage}`;
-
+  // Fetch search results. On the server this calls WordPress directly (no
+  // self-HTTP hop); on the client it uses the /api/search route.
   let results: any[] = [];
   let total = 0;
   let totalPages = 0;
   let error = false;
 
   try {
-    const response = await fetch(searchUrl, {
-      next: { revalidate: 60 },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      results = data.results || [];
-      total = data.pagination?.total || 0;
-      totalPages = data.pagination?.totalPages || 0;
-    } else {
-      error = true;
-    }
+    const data = await searchPostsAPI(query, currentPage, perPage);
+    results = data.results || [];
+    total = data.pagination?.total || 0;
+    totalPages = data.pagination?.totalPages || 0;
   } catch (err) {
     console.error("Search error:", err);
     error = true;
@@ -87,8 +90,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       itemListElement: results.map((result: any, index: number) => ({
         "@type": "ListItem",
         position: (currentPage - 1) * perPage + index + 1,
-        url: result.url,
-        name: result.title,
+        // Full WP post objects expose `link` and `title.rendered`.
+        url: result.link,
+        name:
+          typeof result.title === "string"
+            ? result.title
+            : result.title?.rendered,
       })),
     },
   };

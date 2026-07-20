@@ -9,10 +9,9 @@ import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import RecentNewsSection from "@/components/home/RecentNewsSection";
 import CategorySection from "@/components/home/CategorySection";
+import { getPrimaryCategorySlug } from "@/lib/utils";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSiteSettingsAPI();
@@ -28,30 +27,44 @@ export async function generateMetadata(): Promise<Metadata> {
       ...(settings.siteKeywords || []),
     ],
     openGraph: {
-      title: settings.siteTitle || "Moj Veličanstven Blog",
+      title: settings.siteTitle || "FEM Sportiva",
       description:
         settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
       type: "website",
       url: "/",
+      images: [
+        {
+          url: `/api/og?type=default&title=${encodeURIComponent(settings.siteTitle || "FEM Sportiva")}&subtitle=${encodeURIComponent(settings.siteDescription || "")}&siteName=${encodeURIComponent(settings.siteTitle || "FEM Sportiva")}`,
+          width: 1200,
+          height: 630,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: settings.siteTitle || "Moj Veličanstven Blog",
+      title: settings.siteTitle || "FEM Sportiva",
       description:
         settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
+      images: [
+        `/api/og?type=default&title=${encodeURIComponent(settings.siteTitle || "FEM Sportiva")}&subtitle=${encodeURIComponent(settings.siteDescription || "")}&siteName=${encodeURIComponent(settings.siteTitle || "FEM Sportiva")}`,
+      ],
+    },
+    alternates: {
+      canonical: "/",
+      types: { "application/rss+xml": "/feed.xml" },
     },
   };
 }
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const settings = await fetchSiteSettingsAPI();
-
-  // Fetch 30 posts total: 1 for hero + 25 for pagination + extras for featured
-  const initialData = await fetchPostsAPI({ perPage: 30 });
+export default async function Home() {
+  // These three are independent — fetch them in parallel instead of waterfalling
+  // (settings → posts → categories) one after another.
+  const [settings, initialData, allCategories] = await Promise.all([
+    fetchSiteSettingsAPI(),
+    // 30 posts total: 1 for hero + 25 for pagination + extras for featured
+    fetchPostsAPI({ perPage: 30 }),
+    fetchCategoriesAPI(),
+  ]);
   const allPosts = initialData.posts || [];
 
   // Hero post is always the most recent post
@@ -83,8 +96,7 @@ export default async function Home({
     .filter((p: any) => !excludeIds.includes(p.id))
     .slice(0, 25); // Limit to 25 posts for pagination
 
-  // Fetch top 3 categories by post count
-  const allCategories = await fetchCategoriesAPI();
+  // Fetch top 3 categories by post count (allCategories fetched in parallel above)
   const topCategories = allCategories
     .filter((cat: any) => cat.count > 0)
     .sort((a: any, b: any) => b.count - a.count)
@@ -99,19 +111,19 @@ export default async function Home({
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: settings.siteTitle || "Moj Veličanstven Blog",
+    name: settings.siteTitle || "FEM Sportiva",
     description:
       settings.siteDescription || "Blog o tehnologiji, razvoju i životu",
     url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
     blogPost: postsForPagination.slice(0, 5).map((post: any) => ({
       "@type": "BlogPosting",
-      headline: post.title,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${post.category?.slug || "uncategorized"}/${post.slug}`,
+      headline: post.title?.rendered || "",
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${getPrimaryCategorySlug(post)}/${post.slug}`,
       datePublished: post.date,
       dateModified: post.modified,
       author: {
         "@type": "Person",
-        name: post.author?.name || "Unknown",
+        name: post._embedded?.author?.[0]?.name || "Unknown",
       },
     })),
   };
