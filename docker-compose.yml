@@ -30,6 +30,7 @@ services:
       - ./data/revalidate-webhook.php:/var/www/html/wp-content/mu-plugins/revalidate-webhook.php:ro
       - ./data/sync-urls.php:/var/www/html/wp-content/mu-plugins/sync-urls.php:ro
       - ./data/enable-featured-images.php:/var/www/html/wp-content/mu-plugins/enable-featured-images.php:ro
+      - ./data/fix-admin-prefix.php:/var/www/html/wp-content/mu-plugins/fix-admin-prefix.php:ro
       - wordpress_data:/var/www/html
 
   database:
