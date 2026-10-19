@@ -325,6 +325,29 @@ export async function fetchAuthors(): Promise<WP_REST_API_User[]> {
   );
 }
 
+/** Lean post shape for the sitemap (ids only, no `_embed`). */
+export interface SitemapPost {
+  slug: string;
+  date: string;
+  modified: string;
+  categories: number[];
+  tags: number[];
+  author: number;
+}
+
+/**
+ * Every published post, trimmed with `_fields`. A full `_embed` page of 100 posts
+ * is ~5MB, which exceeds Next's 2MB fetch-cache limit and makes the sitemap
+ * render fail with DYNAMIC_SERVER_USAGE.
+ */
+export async function fetchSitemapPosts(): Promise<SitemapPost[]> {
+  return fetchAllPaginated<SitemapPost>(
+    "/wp/v2/posts",
+    { revalidate: 3600, tags: ["posts"] },
+    "&_fields=slug,date,modified,categories,tags,author",
+  );
+}
+
 /**
  * Fetch author by slug
  */

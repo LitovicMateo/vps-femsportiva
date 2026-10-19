@@ -1,46 +1,27 @@
 import { MetadataRoute } from "next";
-import { fetchPosts, fetchCategories, fetchTags } from "@/lib/wordpress";
-import { getPrimaryCategorySlug } from "@/lib/utils";
+import {
+  fetchAuthors,
+  fetchCategories,
+  fetchSitemapPosts,
+  fetchTags,
+} from "@/lib/wordpress";
 import { getSiteUrl } from "@/lib/seo";
-import type { WP_REST_API_Post } from "@/types/wordpress";
 
 export const revalidate = 3600;
-
-/**
- * Fetch every published post across all pages (WP caps per_page at 100), so the
- * sitemap is not silently truncated to the first 100 posts.
- */
-async function fetchAllPosts(): Promise<WP_REST_API_Post[]> {
-  const perPage = 100;
-  const first = await fetchPosts({ perPage, page: 1 }).catch(() => ({
-    posts: [] as WP_REST_API_Post[],
-    total: 0,
-    totalPages: 0,
-  }));
-
-  const all: WP_REST_API_Post[] = [...(first.posts || [])];
-  const totalPages = first.totalPages || 1;
-
-  for (let page = 2; page <= totalPages; page++) {
-    const next = await fetchPosts({ perPage, page }).catch(() => ({
-      posts: [] as WP_REST_API_Post[],
-      total: 0,
-      totalPages: 0,
-    }));
-    all.push(...(next.posts || []));
-  }
-
-  return all;
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
 
-  const [posts, categories, tags] = await Promise.all([
-    fetchAllPosts(),
+  const [posts, categories, tags, authors] = await Promise.all([
+    fetchSitemapPosts().catch(() => []),
     fetchCategories().catch(() => []),
     fetchTags().catch(() => []),
+    fetchAuthors().catch(() => []),
   ]);
+
+  const categorySlug = new Map(categories.map((c) => [c.id, c.slug]));
+  const tagSlug = new Map(tags.map((t) => [t.id, t.slug]));
+  const authorSlug = new Map(authors.map((a) => [a.id, a.slug]));
 
   // Archive `lastModified` = most recent post change in that archive, so the
   // value only moves when content does (a fresh `new Date()` per request makes
@@ -51,25 +32,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!current || date > current) latest.set(key, date);
   };
 
+  const postUrls: MetadataRoute.Sitemap = [];
   for (const post of posts) {
     const modified = new Date(post.modified || post.date);
+    // Same rule as getPrimaryCategorySlug: first assigned category.
+    const primary = categorySlug.get(post.categories?.[0]) || "uncategorized";
+    postUrls.push({
+      url: `${baseUrl}/${primary}/${post.slug}`,
+      lastModified: modified,
+    });
+
     touch("home", modified);
-    for (const term of (post._embedded?.["wp:term"] ?? []).flat()) {
-      touch(`${term.taxonomy}:${term.slug}`, modified);
-    }
-    const author = post._embedded?.author?.[0];
-    if (author?.slug) touch(`author:${author.slug}`, modified);
     touch("authors", modified);
+    for (const id of post.categories ?? []) {
+      const slug = categorySlug.get(id);
+      if (slug) touch(`category:${slug}`, modified);
+    }
+    for (const id of post.tags ?? []) {
+      const slug = tagSlug.get(id);
+      if (slug) touch(`tag:${slug}`, modified);
+    }
+    const author = authorSlug.get(post.author);
+    if (author) touch(`author:${author}`, modified);
   }
-
-  const home: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: latest.get("home") },
-  ];
-
-  const postUrls: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${baseUrl}/${getPrimaryCategorySlug(post)}/${post.slug}`,
-    lastModified: new Date(post.modified || post.date),
-  }));
 
   // Archives: only those that actually contain posts (skip empty/thin pages).
   const categoryUrls: MetadataRoute.Sitemap = categories
@@ -80,24 +65,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   const tagUrls: MetadataRoute.Sitemap = tags
-    .filter((t) => latest.has(`post_tag:${t.slug}`))
+    .filter((t) => latest.has(`tag:${t.slug}`))
     .map((t) => ({
       url: `${baseUrl}/tags/${t.slug}`,
-      lastModified: latest.get(`post_tag:${t.slug}`),
+      lastModified: latest.get(`tag:${t.slug}`),
     }));
 
-  const authorSlugs = [...latest.keys()]
-    .filter((k) => k.startsWith("author:"))
-    .map((k) => k.slice("author:".length));
-  const authorUrls: MetadataRoute.Sitemap = authorSlugs.map((slug) => ({
-    url: `${baseUrl}/authors/${slug}`,
-    lastModified: latest.get(`author:${slug}`),
-  }));
+  const authorUrls: MetadataRoute.Sitemap = authors
+    .filter((a) => latest.has(`author:${a.slug}`))
+    .map((a) => ({
+      url: `${baseUrl}/authors/${a.slug}`,
+      lastModified: latest.get(`author:${a.slug}`),
+    }));
 
   // WordPress pages are intentionally omitted: there is no frontend route that
   // renders them yet (/<page-slug> would hit the [category] route and 404).
   return [
-    ...home,
+    { url: baseUrl, lastModified: latest.get("home") },
     ...postUrls,
     ...categoryUrls,
     ...tagUrls,
