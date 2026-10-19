@@ -18,6 +18,7 @@ interface HeaderProps {
 }
 
 const DESKTOP_VISIBLE = 6;
+const MENU_ANIM_MS = 150; // keep in sync with MobileMenu.module.css
 
 const SearchIcon = ({ size = 18 }: { size?: number }) => (
   <svg
@@ -57,6 +58,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
   const { toggleTheme } = useTheme();
 
   const [menuOpen, setMenuOpen] = useState<false | "search" | "close">(false);
+  const [menuClosing, setMenuClosing] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [tabletSearchOpen, setTabletSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,7 +154,25 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
     return () => document.removeEventListener("keydown", onKey);
   }, [tabletSearchOpen]);
 
-  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Play the exit animation, then unmount
+  const closeMenu = useCallback(() => {
+    setMenuClosing(true);
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      setMenuOpen(false);
+      setMenuClosing(false);
+    }, MENU_ANIM_MS);
+  }, []);
+
+  const openMenu = (mode: "search" | "close") => {
+    clearTimeout(closeTimer.current);
+    setMenuClosing(false);
+    setMenuOpen(mode);
+  };
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,10 +218,10 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
           ref={hamburgerRef}
           type="button"
           className={styles.hamburger}
-          aria-label="Otvori izbornik"
+          aria-label={menuOpen && !menuClosing ? "Zatvori izbornik" : "Otvori izbornik"}
           aria-haspopup="dialog"
           aria-expanded={menuOpen !== false}
-          onClick={() => setMenuOpen("close")}
+          onClick={() => (menuOpen && !menuClosing ? closeMenu() : openMenu("close"))}
         >
           <svg
             width="20"
@@ -212,7 +232,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
             strokeWidth="2"
             aria-hidden="true"
           >
-            <path d="M4 7h16M4 12h16M4 17h16" />
+            <path d={menuOpen && !menuClosing ? "M6 6l12 12M18 6L6 18" : "M4 7h16M4 12h16M4 17h16"} />
           </svg>
         </button>
 
@@ -322,7 +342,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
           className={styles.mobSearchBtn}
           aria-label="Pretraži"
           aria-haspopup="dialog"
-          onClick={() => setMenuOpen("search")}
+          onClick={() => openMenu("search")}
         >
           <SearchIcon size={20} />
         </button>
@@ -404,6 +424,7 @@ const Header: React.FC<HeaderProps> = ({ categories = [] }) => {
           pathname={pathname}
           initialFocus={menuOpen}
           returnFocusRef={menuOpen === "search" ? mobSearchRef : hamburgerRef}
+          closing={menuClosing}
           onClose={closeMenu}
         />
       )}

@@ -13,6 +13,8 @@ interface MobileMenuProps {
   pathname: string;
   initialFocus: "search" | "close";
   returnFocusRef: React.RefObject<HTMLElement | null>;
+  /** Plays the exit animation; the parent unmounts once it has finished. */
+  closing?: boolean;
   onClose: () => void;
 }
 
@@ -24,6 +26,7 @@ export default function MobileMenu({
   pathname,
   initialFocus,
   returnFocusRef,
+  closing = false,
   onClose,
 }: MobileMenuProps) {
   const router = useRouter();
@@ -31,11 +34,10 @@ export default function MobileMenu({
   const [query, setQuery] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
 
   // Remember which control opened the menu (search icon focuses the input)
   useEffect(() => {
-    (initialFocus === "search" ? inputRef.current : closeRef.current)?.focus();
+    (initialFocus === "search" ? inputRef.current : dialogRef.current)?.focus();
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -87,49 +89,12 @@ export default function MobileMenu({
   return createPortal(
     <div
       ref={dialogRef}
-      className={styles.menu}
+      className={`${styles.menu} ${closing ? styles.closing : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label="Izbornik"
+      tabIndex={-1}
     >
-      <div className={styles.top}>
-        <button
-          ref={closeRef}
-          type="button"
-          className={styles.closeBtn}
-          aria-label="Zatvori izbornik"
-          onClick={onClose}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-          >
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-        <div className={styles.logoWrap}>
-          <Link href="/" className={styles.logoLink} onClick={onClose}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-wordmark.svg"
-              alt="Femsportiva – naslovnica"
-              className={`${styles.logo} ${styles.logoLight}`}
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo-wordmark-dark.svg"
-              alt="Femsportiva – naslovnica"
-              className={`${styles.logo} ${styles.logoDark}`}
-            />
-          </Link>
-        </div>
-      </div>
-
       <div className={styles.body}>
         <form role="search" className={styles.search} onSubmit={submit}>
           <label htmlFor="q-mobile" className={styles.srOnly}>

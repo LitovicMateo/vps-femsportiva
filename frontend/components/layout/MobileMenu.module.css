@@ -1,7 +1,9 @@
 .menu {
   position: fixed;
-  inset: 0;
+  /* Sits below the real header bar (64px + 1px border) so the header never moves */
+  inset: 65px 0 0 0;
   z-index: 1100;
+  outline: none;
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -9,6 +11,42 @@
   font-family: var(--font-body), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
+  /* Duration must match MENU_ANIM_MS in Header.tsx */
+  animation: menuIn 150ms ease-out both;
+}
+
+.closing {
+  animation: menuOut 150ms ease-in both;
+  pointer-events: none;
+}
+
+@keyframes menuIn {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes menuOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu,
+  .closing {
+    animation: none;
+  }
 }
 
 @media (min-width: 768px) {
@@ -24,58 +62,6 @@
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
-}
-
-.top {
-  flex-shrink: 0;
-  box-sizing: border-box;
-  height: 64px;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--rule);
-}
-
-.closeBtn {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  border: 0;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--surface);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.logoWrap {
-  flex-grow: 1;
-  padding-left: 4px;
-}
-
-.logoLink {
-  display: inline-block;
-  line-height: 0;
-}
-
-.logo {
-  height: 40px;
-  width: auto;
-  display: block;
-}
-
-.logoDark {
-  display: none;
-}
-
-:global([data-theme="dark"]) .logoLight {
-  display: none;
-}
-
-:global([data-theme="dark"]) .logoDark {
-  display: block;
 }
 
 .body {

@@ -1,4 +1,4 @@
-/* inline: tablet/desktop row; grid: mobile 2x2. Each instance is hidden at the other breakpoints. */
+/* inline: tablet/desktop row; grid: mobile row of 4 icon buttons. Each instance is hidden at the other breakpoints. */
 .root {
   color: var(--muted);
 }
@@ -40,13 +40,13 @@
   font-weight: 600;
 }
 .inline .pill {
+  width: 36px;
   height: 36px;
-  padding: 0 14px;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   font-size: 15px;
   line-height: 1;

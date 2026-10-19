@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Barlow, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import HeaderWrapper from "@/components/layout/HeaderWrapper";
 import Footer from "@/components/layout/Footer";
+import ScrollToTop from "@/components/layout/ScrollToTop";
 import ClientProviders from "@/components/seo/ClientProviders";
 import StructuredData from "@/components/seo/StructuredData";
 import GoogleScripts from "@/components/seo/GoogleScripts";
@@ -132,6 +134,9 @@ export default async function RootLayout({
         />
         <GoogleScripts />
         <ClientProviders>
+          <Suspense fallback={null}>
+            <ScrollToTop />
+          </Suspense>
           <HeaderWrapper />
           {children}
           <Footer />

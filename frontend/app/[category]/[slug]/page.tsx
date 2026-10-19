@@ -257,7 +257,6 @@ export default async function PostPage({ params }: PostPageProps) {
             className={styles.title}
             dangerouslySetInnerHTML={{ __html: post.title.rendered }}
           />
-          {standfirst && <p className={styles.standfirst}>{standfirst}</p>}
           {author && (
             <div className={styles.byline}>
               <Link

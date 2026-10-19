@@ -81,6 +81,15 @@ export async function generateMetadata({
   };
 }
 
+function pluralArticles(n: number): string {
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  if (mod100 >= 11 && mod100 <= 14) return `${n} članaka`;
+  if (mod10 === 1) return `${n} članak`;
+  if (mod10 >= 2 && mod10 <= 4) return `${n} članka`;
+  return `${n} članaka`;
+}
+
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
@@ -99,6 +108,9 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   const totalPages = data.pagination?.totalPages || 0;
 
   if (!tag) {
+    notFound();
+  }
+  if (totalPages > 0 && currentPage > totalPages) {
     notFound();
   }
 
@@ -134,47 +146,67 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     ],
   };
 
+  const description = stripHtml(tag.description);
+  const showFeatured = currentPage === 1 && posts.length > 0;
+  const featured = showFeatured ? posts[0] : null;
+  const gridPosts = showFeatured ? posts.slice(1) : posts;
+
   return (
-    <div className={styles.container}>
+    <main className={styles.main}>
       <StructuredData data={structuredData} />
-      {/* Header */}
       <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link href="/" className={styles.backLink}>
-            ← Povratak na početnu
-          </Link>
+        <nav aria-label="Putanja" className={styles.breadcrumb}>
+          <Link href="/">Naslovnica</Link>
+          <span aria-hidden="true"> / </span>
+          <span aria-current="page">{tag.name}</span>
+        </nav>
+        <div className={styles.titleRow}>
           <h1 className={styles.title}>{tag.name}</h1>
-          {tag.description && (
-            <p className={styles.description}>{tag.description}</p>
-          )}
-          <p className={styles.postCount}>
-            {total} {total === 1 ? "objava" : "objava"}
-          </p>
+          <p className={styles.count}>{pluralArticles(total)}</p>
         </div>
+        {description && <p className={styles.description}>{description}</p>}
       </header>
 
-      <main className={styles.main}>
-        {posts.length === 0 ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyText}>Nema objava s ovom oznakom.</p>
-          </div>
-        ) : (
-          <>
-            <div className={styles.postsGrid}>
-              {posts.map((post: WP_REST_API_Post) => (
-                <ArticleCard key={post.id} post={post} variant="grid" showExcerpt showKicker mobileList />
-              ))}
-            </div>
-
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              basePath={`/tags/${resolvedParams.slug}`}
+      {posts.length === 0 ? (
+        <p className={styles.empty}>Nema članaka s ovom oznakom.</p>
+      ) : (
+        <>
+          {featured && (
+            <ArticleCard
+              post={featured}
+              variant="featured-wide"
+              kicker="Najnovije s ovom oznakom"
+              headingLevel="h2"
+              showExcerpt
+              priority
             />
-          </>
-        )}
-      </main>
-
-    </div>
+          )}
+          {gridPosts.length > 0 && (
+            <section
+              aria-label="Članci s oznakom"
+              className={`${styles.grid} ${featured ? styles.gridAfterFeatured : ""}`}
+            >
+              {gridPosts.map((post: WP_REST_API_Post) => (
+                <ArticleCard
+                  key={post.id}
+                  post={post}
+                  variant="grid"
+                  headingLevel="h2"
+                  showExcerpt
+                  showKicker={false}
+                  imageRatio="16/10"
+                  mobileList
+                />
+              ))}
+            </section>
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            basePath={`/tags/${resolvedParams.slug}`}
+          />
+        </>
+      )}
+    </main>
   );
 }

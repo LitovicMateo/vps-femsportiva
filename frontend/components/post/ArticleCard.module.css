@@ -84,6 +84,10 @@
 }
 .lead .excerpt {
   font-size: 17px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 .lead .readPart {
   display: none;
@@ -259,6 +263,9 @@
   }
   .lead .excerpt {
     font-size: 18px;
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
   }
   .lead .meta {
     font-size: 14px;
