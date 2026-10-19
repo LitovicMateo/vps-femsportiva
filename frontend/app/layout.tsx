@@ -88,6 +88,15 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
 
+    // icon.svg is picked up from app/; the PNG is for crawlers/browsers that
+    // need a raster favicon (Google wants a multiple of 48px).
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      ],
+    },
+
     verification: GSC_VERIFICATION ? { google: GSC_VERIFICATION } : undefined,
     other: ADSENSE_CLIENT ? { "google-adsense-account": ADSENSE_CLIENT } : undefined,
   };

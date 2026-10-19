@@ -34,7 +34,6 @@ async function square(svg, size, pad, file) {
 await square(wordmark, 512, 56, "public/logo-square.png");
 await square(icon, 512, 64, "public/icon-512.png");
 await square(icon, 192, 24, "public/icon-192.png");
-await square(icon, 192, 24, "app/icon.png");
 await square(icon, 180, 22, "app/apple-icon.png");
 
 const logo = await sharp(wordmarkDark, { density: 300 })
