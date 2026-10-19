@@ -1,5 +1,4 @@
 import { fetchPostsByAuthorAPI } from "@/lib/api";
-import { fetchAuthors } from "@/lib/wordpress";
 import ArticleCard from "@/components/post/ArticleCard";
 import Pagination from "@/components/ui/Pagination";
 import StructuredData from "@/components/seo/StructuredData";
@@ -18,12 +17,6 @@ import type { Metadata } from "next";
 interface AuthorPageProps {
   params: Promise<{ author: string }>;
   searchParams: Promise<{ page?: string }>;
-}
-
-// Pre-render each author archive at build time; unknown authors render on-demand.
-export async function generateStaticParams() {
-  const authors = await fetchAuthors().catch(() => []);
-  return authors.map((author) => ({ author: author.slug }));
 }
 
 function parsePage(value: string | undefined): number {

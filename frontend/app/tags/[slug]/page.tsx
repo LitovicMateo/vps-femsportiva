@@ -1,5 +1,4 @@
 import { fetchPostsByTagAPI, fetchSiteSettingsAPI } from "@/lib/api";
-import { fetchTags } from "@/lib/wordpress";
 import ArticleCard from "@/components/post/ArticleCard";
 import Pagination from "@/components/ui/Pagination";
 import StructuredData from "@/components/seo/StructuredData";
@@ -26,12 +25,6 @@ interface TagPageProps {
 
 function parsePage(value: string | undefined): number {
   return Math.max(1, parseInt(value ?? "1", 10) || 1);
-}
-
-// Pre-render each tag archive at build time; unknown tags render on-demand.
-export async function generateStaticParams() {
-  const tags = await fetchTags().catch(() => []);
-  return tags.map((tag) => ({ slug: tag.slug }));
 }
 
 export async function generateMetadata({

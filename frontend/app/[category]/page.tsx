@@ -1,6 +1,5 @@
 import type { WP_REST_API_Post } from "@/types/wordpress";
 import { fetchPostsByCategoryAPI, fetchSiteSettingsAPI } from "@/lib/api";
-import { fetchCategories } from "@/lib/wordpress";
 import ArticleCard from "@/components/post/ArticleCard";
 import { stripHtml } from "@/lib/format";
 import Pagination from "@/components/ui/Pagination";
@@ -21,13 +20,6 @@ import type { Metadata } from "next";
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
   searchParams: Promise<{ page?: string }>;
-}
-
-// Pre-render each category archive at build time; unknown categories still
-// render on-demand via ISR (dynamicParams defaults to true).
-export async function generateStaticParams() {
-  const categories = await fetchCategories().catch(() => []);
-  return categories.map((category) => ({ category: category.slug }));
 }
 
 export async function generateMetadata({

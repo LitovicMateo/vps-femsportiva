@@ -7,7 +7,9 @@ import {
 } from "@/lib/wordpress";
 import { getSiteUrl } from "@/lib/seo";
 
-export const revalidate = 3600;
+// Rendered per request (not at build, when WordPress is unreachable and the
+// sitemap would be frozen with no posts); fetches are cached for 1h in wordpress.ts.
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
