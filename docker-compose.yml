@@ -29,6 +29,7 @@ services:
       - ./data/view-counter.php:/var/www/html/wp-content/mu-plugins/view-counter.php:ro
       - ./data/revalidate-webhook.php:/var/www/html/wp-content/mu-plugins/revalidate-webhook.php:ro
       - ./data/sync-urls.php:/var/www/html/wp-content/mu-plugins/sync-urls.php:ro
+      - ./data/enable-featured-images.php:/var/www/html/wp-content/mu-plugins/enable-featured-images.php:ro
       - wordpress_data:/var/www/html
 
   database:
