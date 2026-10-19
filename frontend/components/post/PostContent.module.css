@@ -1,39 +1,28 @@
+/* Body column: the mockup widths come from the page; typography from .prose in globals.css. */
+.root:global(.prose) {
+  max-width: none;
+}
+
+/* Injected captions (alt text) share the mockup figcaption look. */
 .caption {
   display: block;
-  margin-top: 0.5rem;
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-  color: #666;
-  font-style: italic;
-  text-align: center;
+  margin-top: 10px;
+  font-size: var(--prose-caption, 14px);
   line-height: 1.5;
+  color: var(--muted);
 }
 
-/* Style for figure captions */
-:global(.prose figure) {
-  margin: 2rem 0;
-}
-
-:global(.prose figure img) {
-  margin-bottom: 0;
-  max-width: 100%;
-  height: auto;
-}
-
-/* Ensure all images within prose content respect max-width */
-:global(.prose img) {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-:global(.prose figcaption) {
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  color: #666;
-  font-style: italic;
-  text-align: center;
-  line-height: 1.5;
+/* Mobile: in-body figures bleed to the 16px gutters, no radius. */
+@media (max-width: 767px) {
+  .root :global(figure) {
+    margin-left: -16px;
+    margin-right: -16px;
+    border-radius: 0;
+  }
+  .root :global(figure img) {
+    border-radius: 0;
+  }
+  .root :global(figcaption) {
+    padding: 0 16px;
+  }
 }

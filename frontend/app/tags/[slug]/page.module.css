@@ -1,13 +1,13 @@
 .container {
   min-height: 100vh;
-  background: #fafafa;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
 }
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
 }
 
 .headerContent {
@@ -17,7 +17,7 @@
 }
 
 .backLink {
-  color: #0066cc;
+  color: var(--accent);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -27,24 +27,24 @@
 }
 
 .backLink:hover {
-  color: #0052a3;
+  color: var(--brand);
 }
 
 .title {
   font-size: 2.25rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .description {
   margin-top: 0.5rem;
-  color: #666;
+  color: var(--muted);
 }
 
 .postCount {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #999;
+  color: var(--muted);
 }
 
 .main {
@@ -61,14 +61,8 @@
 }
 
 .emptyText {
-  color: #999;
+  color: var(--muted);
   font-size: 1.125rem;
-}
-
-.postsGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
 }
 
 @media (min-width: 640px) {
@@ -89,4 +83,32 @@
   .main {
     padding: 3rem 2rem;
   }
+}
+
+/* Article grid: list on mobile, 2 / 3 columns above */
+.postsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+
+@media (min-width: 768px) {
+  .postsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px 24px;
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .postsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 48px 32px;
+  }
+}
+
+/* Pagination no longer carries its own top margin */
+.main > nav[aria-label="Stranice"] {
+  margin-top: 2rem;
 }

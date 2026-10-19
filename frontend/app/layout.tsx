@@ -1,56 +1,69 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import HeaderWrapper from "@/components/layout/HeaderWrapper";
+import Footer from "@/components/layout/Footer";
 import ClientProviders from "@/components/seo/ClientProviders";
+import StructuredData from "@/components/seo/StructuredData";
+import GoogleScripts from "@/components/seo/GoogleScripts";
+import ConsentManager from "@/components/seo/ConsentManager";
 import { fetchSiteSettingsAPI } from "@/lib/api";
+import { ADSENSE_CLIENT, GSC_VERIFICATION } from "@/lib/google";
+import {
+  DEFAULT_OG_IMAGE,
+  getSiteUrl,
+  isIndexable,
+  siteJsonLd,
+} from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME } from "@/lib/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const barlow = Barlow({
+  variable: "--font-body",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-display",
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await fetchSiteSettingsAPI();
-  const siteTitle = settings.siteTitle || "FEM Sportiva";
-  const siteDescription =
-    settings.siteDescription || "Blog o sportu i životnom stilu";
+  const siteTitle = settings.siteTitle || SITE_NAME;
+  const siteDescription = settings.siteDescription || SITE_DESCRIPTION;
+  const indexable = isIndexable();
 
   return {
-    metadataBase: new URL(
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-    ),
+    metadataBase: new URL(getSiteUrl()),
     title: {
       default: siteTitle,
       template: `%s | ${siteTitle}`,
     },
     description: siteDescription,
-    keywords: [
-      "blog",
-      "sport",
-      "femsportiva",
-      ...(settings.siteKeywords || []),
-    ],
+    keywords: [...SITE_KEYWORDS, ...(settings.siteKeywords || [])],
     authors: [{ name: siteTitle }],
     creator: siteTitle,
     publisher: siteTitle,
+    applicationName: siteTitle,
 
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: indexable
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            "max-video-preview": -1,
+            "max-image-preview": "large",
+            "max-snippet": -1,
+          },
+        }
+      : { index: false, follow: false },
 
     openGraph: {
       type: "website",
@@ -59,12 +72,14 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: siteTitle,
       title: siteTitle,
       description: siteDescription,
+      images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
     },
 
     twitter: {
       card: "summary_large_image",
       title: siteTitle,
       description: siteDescription,
+      images: [DEFAULT_OG_IMAGE],
     },
 
     alternates: {
@@ -72,14 +87,19 @@ export async function generateMetadata(): Promise<Metadata> {
         "application/rss+xml": "/feed.xml",
       },
     },
+
+    verification: GSC_VERIFICATION ? { google: GSC_VERIFICATION } : undefined,
+    other: ADSENSE_CLIENT ? { "google-adsense-account": ADSENSE_CLIENT } : undefined,
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await fetchSiteSettingsAPI();
+
   return (
     <html lang="hr" suppressHydrationWarning>
       <head>
@@ -93,11 +113,20 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
       >
+        <StructuredData
+          data={siteJsonLd(
+            settings.siteTitle || SITE_NAME,
+            settings.siteDescription || SITE_DESCRIPTION,
+          )}
+        />
+        <GoogleScripts />
         <ClientProviders>
           <HeaderWrapper />
           {children}
+          <Footer />
+          <ConsentManager />
         </ClientProviders>
       </body>
     </html>

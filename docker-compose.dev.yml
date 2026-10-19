@@ -2,6 +2,9 @@ services:
   frontend:
     image: node:20-alpine
     working_dir: /app
+    # Base image/Dockerfile runs as non-root 'nextjs' (uid 1001); the bind-mounted
+    # ./frontend is owned by the host user, so dev needs root to write there.
+    user: root
     command: sh -c "npm ci && npm run dev -- -H 0.0.0.0"
     volumes:
       - ./frontend:/app
@@ -14,11 +17,22 @@ services:
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_WORDPRESS_URL: ${NEXT_PUBLIC_WORDPRESS_URL}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+      NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+      NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
       REVALIDATION_SECRET: ${REVALIDATION_SECRET:-dev-revalidation-secret}
       VIEWS_SECRET: ${VIEWS_SECRET:-dev-views-secret}
       NODE_ENV: development
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
+    # npm ci runs on every start, so allow a long warm-up. Probe 127.0.0.1:
+    # next listens on 0.0.0.0 (IPv4 only) and 'localhost' resolves to ::1 first.
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 300s
     # depends_on (condition: service_healthy) is defined in the base compose file.
 
   wordpress:

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8">
+<title>Femsportiva – kategorija Košarka (tablet)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&amp;family=Barlow:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#15171A;text-decoration:none}a:hover{color:#D1007D}
+</style>
+</helmet>
+<div style="width: 834px; min-height: 3150px; display: flex; flex-direction: column; background: #FAFAF7; color: #15171A; font-family: 'Barlow', system-ui, sans-serif; font-size: 16px; line-height: 1.5">
+
+<header style="background: #FFFFFF; border-bottom: 1px solid #E3E3DE">
+<div style="padding: 0 32px; height: 68px; display: flex; align-items: center; gap: 12px">
+<div style="flex-grow: 1"><a href="Tablet.dc.html" style="display: inline-block; line-height: 0"><img src="/_blob/3fd743cfcd6331d4e45894c3362fe5a7" alt="Femsportiva – naslovnica" style="height: 46px; width: auto; display: block"></a></div>
+<button type="button" aria-label="Pretraži" style="width: 44px; height: 44px; border: 1px solid #E3E3DE; border-radius: 999px; background: #FFFFFF; color: #15171A; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<button type="button" aria-label="Promijeni temu" style="width: 44px; height: 44px; border: 1px solid #E3E3DE; border-radius: 999px; background: #FFFFFF; color: #15171A; display: grid; place-items: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg></button>
+</div>
+<nav aria-label="Kategorije" style="border-top: 1px solid #EFEFEA; overflow-x: auto">
+<ul style="list-style: none; margin: 0; padding: 0 32px; height: 48px; display: flex; align-items: center; gap: 24px; font-weight: 600; font-size: 15px; white-space: nowrap">
+<li><a href="Tablet.dc.html">Naslovnica</a></li>
+<li><a href="#">Nogomet</a></li>
+<li><a href="#" aria-current="page" style="color: {{accent}}; box-shadow: inset 0 -2px 0 {{accent}}; padding-bottom: 4px">Košarka</a></li>
+<li><a href="#">Rukomet</a></li>
+<li><a href="#">Odbojka</a></li>
+<li><a href="#">Tenis</a></li>
+<li><a href="#">Atletika</a></li>
+<li><a href="#">Više</a></li>
+</ul>
+</nav>
+</header>
+
+<main style="flex-grow: 1; padding: 40px 32px 80px; display: flex; flex-direction: column; gap: 48px">
+
+<section style="display: flex; flex-direction: column; gap: 10px; border-bottom: 2px solid #15171A; padding-bottom: 28px">
+<nav aria-label="Putanja" style="font-size: 14px; color: #5B6066"><a href="Tablet.dc.html" style="color: #5B6066">Naslovnica</a> <span aria-hidden="true">/</span> Košarka</nav>
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+<h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 72px; line-height: 0.95; text-transform: uppercase">Košarka</h1>
+<p style="margin: 0 0 6px; font-size: 14px; color: #5B6066">[broj] članaka</p>
+</div>
+<p style="margin: 0; font-size: 18px; color: #3E4247">[Kratki opis kategorije — npr. ženska košarka od klupskih liga do reprezentacije.]</p>
+</section>
+
+<article style="display: flex; flex-direction: column; gap: 14px">
+<a href="ArticleTablet.dc.html" style="display: block; aspect-ratio: 16 / 10; background: #E2D8CF; border-radius: 6px"></a>
+<span style="font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: {{accent}}">Najnovije u kategoriji</span>
+<h2 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 40px; line-height: 1.04"><a href="ArticleTablet.dc.html">Ženska liga pred startom: što donosi nova sezona</a></h2>
+<p style="margin: 0; font-size: 18px; color: #3E4247">Novi klubovi, poznata lica na klupama i mlade igračice koje traže minute — pregled uoči prvog kola.</p>
+<p style="margin: 0; font-size: 14px; color: #5B6066">Piše [Ime autora] · 16. listopada 2026. · 7 min čitanja</p>
+</article>
+
+<section aria-label="Članci iz kategorije" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; border-top: 1px solid #E3E3DE; padding-top: 40px">
+<sc-for list="{{posts}}" as="p" hint-placeholder-count="6">
+<article style="display: flex; flex-direction: column; gap: 10px">
+<a href="ArticleTablet.dc.html" style="display: block; aspect-ratio: 16 / 10; background: {{p.tone}}; border-radius: 6px"></a>
+<h3 style="margin: 4px 0 0; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 24px; line-height: 1.1"><a href="ArticleTablet.dc.html">{{p.title}}</a></h3>
+<p style="margin: 0; font-size: 15px; color: #3E4247">{{p.excerpt}}</p>
+<p style="margin: 0; font-size: 13px; color: #5B6066">{{p.date}}</p>
+</article>
+</sc-for>
+</section>
+
+<nav aria-label="Stranice" style="display: flex; justify-content: center; align-items: center; gap: 8px; font-weight: 600; font-size: 15px">
+<a href="#" aria-current="page" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; background: #15171A; color: #FFFFFF">1</a>
+<a href="#" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; border: 1px solid #E3E3DE; box-sizing: border-box; background: #FFFFFF">2</a>
+<a href="#" style="width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; border: 1px solid #E3E3DE; box-sizing: border-box; background: #FFFFFF">3</a>
+<span aria-hidden="true" style="padding: 0 6px; color: #5B6066">…</span>
+<a href="#" style="height: 44px; display: inline-flex; align-items: center; padding: 0 20px; border-radius: 999px; border: 1px solid #E3E3DE; box-sizing: border-box; background: #FFFFFF">Sljedeća →</a>
+</nav>
+
+</main>
+
+<footer style="background: #15171A; color: #E8E8E3">
+<div style="padding: 56px 32px 28px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<a href="Tablet.dc.html" style="display: inline-block; line-height: 0; align-self: flex-start"><img src="/_blob/34443ddb0572896b8f2f7888edb71b97" alt="Femsportiva" style="height: 64px; width: auto; display: block"></a>
+<p style="margin: 0; color: #A9ADB1; max-width: 440px">Priče, analize i vijesti iz ženskog sporta — od lokalnih terena do velikih natjecanja.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px">
+<nav aria-label="Kategorije u podnožju" style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: #A9ADB1">Kategorije</h2>
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="6"><a href="#" style="color: #E8E8E3">{{n}}</a></sc-for>
+</nav>
+<nav aria-label="Informacije" style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: #A9ADB1">Stranice</h2>
+<a href="#" style="color: #E8E8E3">O nama</a>
+<a href="#" style="color: #E8E8E3">Kontakt</a>
+<a href="#" style="color: #E8E8E3">Impressum</a>
+<a href="#" style="color: #E8E8E3">Pravila privatnosti</a>
+</nav>
+<nav aria-label="Društvene mreže" style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: #A9ADB1">Pratite nas</h2>
+<a href="#" style="color: #E8E8E3">Instagram</a>
+<a href="#" style="color: #E8E8E3">Facebook</a>
+<a href="#" style="color: #E8E8E3">YouTube</a>
+<a href="#" style="color: #E8E8E3">RSS</a>
+</nav>
+</div>
+<div style="display: flex; justify-content: space-between; border-top: 1px solid #2E3136; padding-top: 22px; font-size: 14px; color: #A9ADB1">
+<span>© 2026 Femsportiva. Sva prava pridržana.</span>
+<a href="#" style="color: #A9ADB1">Natrag na vrh ↑</a>
+</div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#D1007D","options":["#D1007D","#15171A","#1F5FBF","#0F7B6C"]},"$preview":{"width":834,"height":3150}}'>
+class Component extends DCLogic {
+renderVals() {
+const tones = ['#D9DCD3', '#D5D9E0', '#E2D8CF', '#D8D3DE', '#CFDCD9'];
+const t = (i) => tones[i % tones.length];
+return {
+accent: this.props.accent ?? '#D1007D',
+nav: ['Nogomet', 'Košarka', 'Rukomet', 'Odbojka', 'Tenis', 'Atletika'],
+posts: [
+{ title: 'Mlade košarkašice i put do seniorske reprezentacije', excerpt: 'Kako izgleda prijelaz iz juniorske u seniorsku košarku i gdje igračice najčešće zapnu.', date: '11. listopada 2026.', tone: t(0) },
+{ title: 'Taktička ploča: kako se brani pick and roll', excerpt: 'Tri najčešća obrambena odgovora i kada koji ima smisla.', date: '7. listopada 2026.', tone: t(3) },
+{ title: 'Dan s trenericom omladinskog pogona', excerpt: 'Od jutarnjeg treninga do večernje analize — jedan radni dan iz blizine.', date: '2. listopada 2026.', tone: t(1) },
+{ title: 'Zašto je šut za tri postao ključan i u ženskoj igri', excerpt: 'Promjene u stilu igre i što one znače za mlađe igračice.', date: '28. rujna 2026.', tone: t(4) },
+{ title: 'Povratak nakon ozljede koljena: priča jedne bekice', excerpt: 'Duga rehabilitacija, mali koraci i prvi minuti na parketu.', date: '23. rujna 2026.', tone: t(2) },
+{ title: 'Ljetni kampovi: gdje se razvijaju buduće reprezentativke', excerpt: 'Pregled kampova i što roditelji trebaju znati prije prijave.', date: '18. rujna 2026.', tone: t(0) }
+]
+};
+}
+}
+</script>
+</body>
+</html>

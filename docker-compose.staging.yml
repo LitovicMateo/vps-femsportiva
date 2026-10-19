@@ -51,10 +51,16 @@ services:
       args:
         NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
     environment:
       NODE_ENV: production
       NEXT_PUBLIC_WORDPRESS_API_URL: ${NEXT_PUBLIC_WORDPRESS_API_URL}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      NEXT_PUBLIC_GSC_VERIFICATION: ${NEXT_PUBLIC_GSC_VERIFICATION:-}
+      NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+      NEXT_PUBLIC_ADSENSE_CLIENT: ${NEXT_PUBLIC_ADSENSE_CLIENT:-}
       REVALIDATION_SECRET: ${REVALIDATION_SECRET}
       VIEWS_SECRET: ${VIEWS_SECRET}
     healthcheck:
@@ -65,7 +71,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:3000",
+          "http://127.0.0.1:3000",
         ]
       interval: 30s
       timeout: 10s

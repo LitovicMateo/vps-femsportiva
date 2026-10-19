@@ -1,24 +1,25 @@
 import { fetchAuthorsAPI, fetchPostsAPI } from "@/lib/api";
 import AuthorCard from "@/components/author/AuthorCard";
-import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
+import type { WP_REST_API_User } from "@/types/wordpress";
+import { absoluteUrl } from "@/lib/seo";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Autori",
-  description: "Upoznajte sve autore koji doprinose našem blogu",
+  description: "Upoznajte ljude iza Femsportive: novinare, analitičare i sportske entuzijaste koji pišu o ženskom sportu.",
   openGraph: {
     title: "Autori",
-    description: "Upoznajte sve autore koji doprinose našem blogu",
+    description: "Upoznajte ljude iza Femsportive: novinare, analitičare i sportske entuzijaste koji pišu o ženskom sportu.",
     type: "website",
     url: "/authors",
   },
   twitter: {
     card: "summary",
     title: "Autori",
-    description: "Upoznajte sve autore koji doprinose našem blogu",
+    description: "Upoznajte ljude iza Femsportive: novinare, analitičare i sportske entuzijaste koji pišu o ženskom sportu.",
   },
   alternates: {
     canonical: "/authors",
@@ -30,7 +31,7 @@ export default async function AuthorsPage() {
 
   // Get post count for each author
   const authorsWithCounts = await Promise.all(
-    authors.map(async (author: any) => {
+    authors.map(async (author: WP_REST_API_User) => {
       const data = await fetchPostsAPI({ author: author.id, perPage: 1 });
       return {
         author,
@@ -59,19 +60,19 @@ export default async function AuthorsPage() {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: "Autori",
-    description: "Upoznajte sve autore koji doprinose našem blogu",
-    url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors`,
+    description: "Upoznajte ljude iza Femsportive: novinare, analitičare i sportske entuzijaste koji pišu o ženskom sportu.",
+    url: absoluteUrl("/authors"),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: activeAuthors.length,
       itemListElement: activeAuthors.map(
-        ({ author, postCount }: any, index: number) => ({
+        ({ author }, index: number) => ({
           "@type": "ListItem",
           position: index + 1,
           item: {
             "@type": "Person",
             name: author.name,
-            url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${author.slug}`,
+            url: absoluteUrl(`/authors/${author.slug}`),
             image: author.avatar_urls ? author.avatar_urls["96"] : undefined,
           },
         }),
@@ -99,7 +100,7 @@ export default async function AuthorsPage() {
           </div>
         ) : (
           <div className={styles.grid}>
-            {activeAuthors.map(({ author, postCount }: any) => (
+            {activeAuthors.map(({ author, postCount }) => (
               <AuthorCard
                 key={author.id}
                 author={author}
@@ -110,7 +111,6 @@ export default async function AuthorsPage() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

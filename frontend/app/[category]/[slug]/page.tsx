@@ -1,7 +1,12 @@
-import { fetchPostBySlugAPI, fetchPostsAPI, fetchSiteSettingsAPI } from "@/lib/api";
+import {
+  fetchPostBySlugAPI,
+  fetchPostsAPI,
+  fetchSiteSettingsAPI,
+} from "@/lib/api";
 import { fetchPosts } from "@/lib/wordpress";
-import PostCard from "@/components/post/PostCard";
-import Footer from "@/components/layout/Footer";
+import ArticleCard from "@/components/post/ArticleCard";
+import SectionHeading from "@/components/post/SectionHeading";
+import AuthorBox from "@/components/author/AuthorBox";
 import StructuredData from "@/components/seo/StructuredData";
 import PostContent from "@/components/post/PostContent";
 import ShareButtons from "@/components/post/ShareButtons";
@@ -12,15 +17,37 @@ import {
   getPrimaryCategorySlug,
   transformWordPressUrl,
 } from "@/lib/utils";
-import { FaClock, FaEye } from "react-icons/fa";
+import {
+  formatDateHr,
+  getAuthor,
+  getFeaturedImage,
+  getTags,
+  stripHtml,
+} from "@/lib/format";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import {
+  DEFAULT_OG_IMAGE,
+  PUBLISHER_LOGO,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  ogImageUrl,
+  truncate,
+} from "@/lib/seo";
+import { SITE_NAME } from "@/lib/site";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
+import type { WP_REST_API_Post } from "@/types/wordpress";
+
+function excerptText(html: string | undefined): string {
+  return stripHtml(html)
+    .replace(/\s*\[(?:…|&hellip;|\.\.\.)\]\s*$/, "")
+    .trim();
+}
 
 interface PostPageProps {
-  params: { category: string; slug: string };
+  params: Promise<{ category: string; slug: string }>;
 }
 
 // Pre-render the most recent posts (bounded to the latest 100) at build time;
@@ -42,7 +69,10 @@ export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
   const resolvedParams = await params;
-  const [post, settings] = await Promise.all([
+  const [post, settings]: [
+    WP_REST_API_Post | null,
+    Awaited<ReturnType<typeof fetchSiteSettingsAPI>>,
+  ] = await Promise.all([
     fetchPostBySlugAPI(resolvedParams.slug),
     fetchSiteSettingsAPI(),
   ]);
@@ -55,43 +85,56 @@ export async function generateMetadata({
 
   const categories = post._embedded?.["wp:term"]?.[0] || [];
   const postCategory = categories.find(
-    (cat: any) => cat.slug === resolvedParams.category,
+    (cat) => cat.slug === resolvedParams.category,
   );
   const author = post._embedded?.author?.[0];
   const featuredImage = transformWordPressUrl(
     post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
   );
 
-  // Extract plain text from HTML content for description
-  const plainText = post.excerpt.rendered.replace(/<[^>]*>/g, "").trim();
-  const description =
-    plainText.substring(0, 160) + (plainText.length > 160 ? "..." : "");
+  const description = truncate(excerptText(post.excerpt?.rendered), 160);
+  const cleanTitle = stripHtml(post.title.rendered);
 
-  // Generate dynamic OG image URL
-  const siteName = settings?.siteTitle || "FEM Sportiva";
-  const ogImageUrl = `/api/og?title=${encodeURIComponent(post.title.rendered)}&category=${encodeURIComponent(postCategory?.name || "")}&author=${encodeURIComponent(author?.name || "")}&type=post&siteName=${encodeURIComponent(siteName)}`;
+  // Featured image when present, otherwise a branded generated card
+  const siteName = settings?.siteTitle || SITE_NAME;
+  const media = post._embedded?.["wp:featuredmedia"]?.[0];
+  const fallbackImage = ogImageUrl({
+    title: cleanTitle,
+    type: "post",
+    category: postCategory?.name ? stripHtml(postCategory.name) : undefined,
+    author: author?.name,
+    siteName,
+  });
+  const ogImage = featuredImage
+    ? {
+        url: featuredImage,
+        width: media?.media_details?.width,
+        height: media?.media_details?.height,
+        alt: media?.alt_text || cleanTitle,
+      }
+    : { url: fallbackImage, width: 1200, height: 630, alt: cleanTitle };
 
   return {
-    title: post.title.rendered,
+    title: cleanTitle,
     description: description,
-    keywords: categories.map((cat: any) => cat.name),
+    keywords: categories.map((cat) => cat.name),
     authors: author ? [{ name: author.name }] : undefined,
     openGraph: {
-      title: post.title.rendered,
+      title: cleanTitle,
       description: description,
       type: "article",
       publishedTime: post.date,
       modifiedTime: post.modified,
       authors: author ? [author.name] : undefined,
-      tags: categories.map((cat: any) => cat.name),
-      images: featuredImage ? [{ url: featuredImage }] : [{ url: ogImageUrl }],
+      tags: categories.map((cat) => cat.name),
+      images: [ogImage],
       url: `/${resolvedParams.category}/${resolvedParams.slug}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title.rendered,
+      title: cleanTitle,
       description: description,
-      images: featuredImage ? [featuredImage] : [ogImageUrl],
+      images: [ogImage.url],
     },
     alternates: {
       canonical: `/${resolvedParams.category}/${resolvedParams.slug}`,
@@ -101,7 +144,9 @@ export async function generateMetadata({
 
 export default async function PostPage({ params }: PostPageProps) {
   const resolvedParams = await params;
-  const post = await fetchPostBySlugAPI(resolvedParams.slug);
+  const post: WP_REST_API_Post | null = await fetchPostBySlugAPI(
+    resolvedParams.slug,
+  );
 
   if (!post) {
     notFound();
@@ -110,207 +155,234 @@ export default async function PostPage({ params }: PostPageProps) {
   // Verify the post is in the correct category
   const categories = post._embedded?.["wp:term"]?.[0] || [];
   const postCategory = categories.find(
-    (cat: any) => cat.slug === resolvedParams.category,
+    (cat) => cat.slug === resolvedParams.category,
   );
 
   if (!postCategory) {
     notFound();
   }
 
-  const author = post._embedded?.author?.[0];
-  const featuredImage = transformWordPressUrl(
-    post._embedded?.["wp:featuredmedia"]?.[0]?.source_url,
-  );
-  const tags = post.tags || [];
-
-  // Calculate reading time
+  const author = getAuthor(post);
+  const image = getFeaturedImage(post);
+  const featuredImage = image?.url;
+  const tags = getTags(post);
   const readingTime = calculateReadingTime(post.content.rendered);
-
-  // Get view count
   const viewCount = post.view_count || 0;
+  const date = formatDateHr(post.date);
+  const categoryName = stripHtml(postCategory.name);
+  const categoryHref = `/${resolvedParams.category}`;
 
-  // Fetch related posts based on tags
-  // For now, just fetch recent posts from same category
+  // Standfirst: the excerpt without the trailing "[…]"
+  const standfirst = excerptText(post.excerpt?.rendered);
+
+  // Related: recent posts from the same category
   const relatedData = await fetchPostsAPI({
     categories: postCategory.id,
     perPage: 4,
   });
-  const relatedPosts = (relatedData.posts || [])
-    .filter((p: any) => p.id !== post.id)
+  const relatedPosts = ((relatedData.posts || []) as WP_REST_API_Post[])
+    .filter((p) => p.id !== post.id)
     .slice(0, 3);
 
-  const date = new Date(post.date).toLocaleDateString("hr-HR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
+  const postPath = `/${resolvedParams.category}/${resolvedParams.slug}`;
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title.rendered,
-    description: post.excerpt.rendered.replace(/<[^>]*>/g, "").trim(),
-    image: featuredImage || undefined,
-    datePublished: post.date,
-    dateModified: post.modified,
-    author: author
-      ? {
-          "@type": "Person",
-          name: author.name,
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${author.slug}`,
-        }
-      : undefined,
-    publisher: {
-      "@type": "Organization",
-      name: "FEM Sportiva",
-      logo: {
-        "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo_light.svg`,
+    "@graph": [
+      {
+        "@type": "NewsArticle",
+        headline: stripHtml(post.title.rendered),
+        description: standfirst || undefined,
+        image: [featuredImage || absoluteUrl(DEFAULT_OG_IMAGE)],
+        datePublished: post.date,
+        dateModified: post.modified,
+        inLanguage: "hr",
+        articleSection: categoryName,
+        author: author
+          ? {
+              "@type": "Person",
+              name: author.name,
+              url: absoluteUrl(`/authors/${author.slug}`),
+            }
+          : undefined,
+        publisher: {
+          "@type": "Organization",
+          name: SITE_NAME,
+          logo: {
+            "@type": "ImageObject",
+            url: absoluteUrl(PUBLISHER_LOGO),
+            width: 512,
+            height: 512,
+          },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": absoluteUrl(postPath),
+        },
+        keywords: tags.length
+          ? tags.map((t) => t.name).join(", ")
+          : categoryName,
       },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL}/${resolvedParams.category}/${resolvedParams.slug}`,
-    },
-    keywords: categories.map((cat: any) => cat.name).join(", "),
+      breadcrumbJsonLd([
+        { name: "Naslovnica", path: "/" },
+        { name: categoryName, path: categoryHref },
+        { name: stripHtml(post.title.rendered), path: postPath },
+      ]),
+    ],
   };
 
   // Build full URL for sharing
-  const fullUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${resolvedParams.category}/${resolvedParams.slug}`;
+  const fullUrl = absoluteUrl(postPath);
+  const shareTitle = stripHtml(post.title.rendered);
 
   return (
-    <div className={styles.container}>
+    <main className={styles.main}>
       <StructuredData data={structuredData} />
-      <ViewCounter postId={post.id} slug={post.slug} />
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <Link
-            href={`/${resolvedParams.category}`}
-            className={styles.backLink}
-          >
-            ← Povratak na {postCategory.name}
-          </Link>
-        </div>
-      </header>
+      <ViewCounter key={post.id} postId={post.id} slug={post.slug} />
 
-      <main className={styles.main}>
-        {/* Article Header */}
-        <article className={styles.article}>
-          {featuredImage && (
-            <div className={styles.featuredImage}>
+      <article className={styles.article}>
+        <header className={styles.header}>
+          <nav aria-label="Putanja" className={styles.breadcrumb}>
+            <Link href="/" className={styles.crumbHome}>
+              Naslovnica
+            </Link>
+            <span aria-hidden="true" className={styles.crumbSep}>
+              {" "}
+              /{" "}
+            </span>
+            <Link href={categoryHref} className={styles.crumbCategory}>
+              {categoryName}
+            </Link>
+          </nav>
+          <h1
+            className={styles.title}
+            dangerouslySetInnerHTML={{ __html: post.title.rendered }}
+          />
+          {standfirst && <p className={styles.standfirst}>{standfirst}</p>}
+          {author && (
+            <div className={styles.byline}>
+              <Link
+                href={`/authors/${author.slug}`}
+                className={styles.avatar}
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                {author.avatar && (
+                  <Image
+                    src={author.avatar}
+                    alt=""
+                    fill
+                    sizes="44px"
+                    unoptimized
+                    className={styles.avatarImg}
+                  />
+                )}
+              </Link>
+              <div className={styles.bylineText}>
+                <Link
+                  href={`/authors/${author.slug}`}
+                  className={styles.authorName}
+                >
+                  {author.name}
+                </Link>
+                <span className={styles.meta}>
+                  <time dateTime={post.date}>{date}</time> · {readingTime} min
+                  čitanja
+                  {viewCount > 0 && (
+                    <span className={styles.views}>
+                      {" "}
+                      · {formatCompactNumber(viewCount)} pregleda
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
+        </header>
+
+        {image && (
+          <figure className={styles.figure}>
+            <div className={styles.imageWrap}>
               <Image
-                src={featuredImage}
-                alt={post.title.rendered}
+                src={image.url}
+                alt={image.alt}
                 fill
-                sizes="(max-width: 768px) 100vw, 800px"
+                sizes="(min-width: 1264px) 1200px, 100vw"
                 priority
                 unoptimized
+                className={styles.image}
               />
+            </div>
+            {image.caption && (
+              <figcaption className={styles.caption}>
+                {image.caption}
+              </figcaption>
+            )}
+          </figure>
+        )}
+
+        <div className={styles.body}>
+          <ShareButtons title={shareTitle} url={fullUrl} variant="inline" />
+
+          <PostContent key={post.id} content={post.content.rendered} />
+
+          {tags.length > 0 && (
+            <div className={styles.tags}>
+              {tags.map((tag) => (
+                <Link
+                  key={tag.slug}
+                  href={`/tags/${tag.slug}`}
+                  className={styles.tag}
+                >
+                  #{tag.name}
+                </Link>
+              ))}
             </div>
           )}
 
-          <div className={styles.content}>
-            {/* Category Badge */}
-            <Link
-              href={`/${resolvedParams.category}`}
-              className={styles.categoryBadge}
-            >
-              {postCategory.name}
-            </Link>
+          <ShareButtons title={shareTitle} url={fullUrl} variant="grid" />
 
-            {/* Title */}
-            <h1
-              className={styles.title}
-              dangerouslySetInnerHTML={{ __html: post.title.rendered }}
+          {author && (
+            <AuthorBox
+              variant="article"
+              author={{
+                name: author.name,
+                slug: author.slug,
+                description: author.description,
+                avatar: author.avatar,
+              }}
             />
+          )}
+        </div>
+      </article>
 
-            {/* Meta */}
-            <div className={styles.meta}>
-              {author && (
-                <div className={styles.authorInfo}>
-                  {author.avatar_urls && (
-                    <Link href={`/authors/${author.slug}`}>
-                      <Image
-                        src={author.avatar_urls["48"]}
-                        alt={author.name}
-                        width={48}
-                        height={48}
-                        className={styles.avatar}
-                        unoptimized
-                      />
-                    </Link>
-                  )}
-                  <div>
-                    <Link
-                      href={`/authors/${author.slug}`}
-                      className={styles.authorLink}
-                    >
-                      <p className={styles.authorName}>{author.name}</p>
-                    </Link>
-                    <div className={styles.postMeta}>
-                      <time dateTime={post.date} className={styles.date}>
-                        {date}
-                      </time>
-                      <span>•</span>
-                      <span className={styles.readingTime}>
-                        <FaClock /> {readingTime} min čitanja
-                      </span>
-                      {viewCount > 0 && (
-                        <>
-                          <span>•</span>
-                          <span className={styles.viewCount}>
-                            <FaEye /> {formatCompactNumber(viewCount)} pregleda
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Content */}
-            <PostContent content={post.content.rendered} />
-
-            {/* Share Buttons */}
-            <ShareButtons title={post.title.rendered} url={fullUrl} />
-
-            {/* Tags */}
-            {post._embedded?.["wp:term"]?.[1] &&
-              post._embedded["wp:term"][1].length > 0 && (
-                <div className={styles.tags}>
-                  <h3 className={styles.tagsTitle}>Oznake</h3>
-                  <div className={styles.tagsList}>
-                    {post._embedded["wp:term"][1].map((tag: any) => (
-                      <Link
-                        key={tag.id}
-                        href={`/tags/${tag.slug}`}
-                        className={styles.tag}
-                      >
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+      {relatedPosts.length > 0 && (
+        <section className={styles.related} aria-labelledby="related-title">
+          <SectionHeading title="Povezani članci" id="related-title" />
+          {/* One set per breakpoint; the others are display:none */}
+          <div className={styles.relatedGrid}>
+            {relatedPosts.map((p) => (
+              <ArticleCard key={p.id} post={p} variant="grid" />
+            ))}
           </div>
-        </article>
-
-        {/* Related Posts */}
-        {relatedPosts.length > 0 && (
-          <div className={styles.relatedSection}>
-            <h2 className={styles.relatedTitle}>Povezane Objave</h2>
-            <div className={styles.relatedGrid}>
-              {relatedPosts.map((relatedPost: any) => (
-                <PostCard key={relatedPost.id} post={relatedPost} />
-              ))}
-            </div>
+          <div className={styles.relatedList}>
+            {relatedPosts.map((p) => (
+              <ArticleCard key={p.id} post={p} variant="list" />
+            ))}
           </div>
-        )}
-      </main>
-
-      <Footer />
-    </div>
+          {/* Tablet rows */}
+          <div className={styles.relatedRows}>
+            {relatedPosts.map((p) => (
+              <ArticleCard
+                key={p.id}
+                post={p}
+                variant="row"
+                thumb="lg"
+                showKicker
+              />
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
   );
 }

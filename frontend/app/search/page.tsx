@@ -1,10 +1,11 @@
 import Pagination from "@/components/ui/Pagination";
-import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import SearchHeader from "@/components/search/SearchHeader";
 import SearchResults from "@/components/search/SearchResults";
 import { searchPostsAPI } from "@/lib/api";
 import Link from "next/link";
+import type { WP_REST_API_Post } from "@/types/wordpress";
+import { absoluteUrl } from "@/lib/seo";
 import styles from "./page.module.css";
 
 interface SearchPageProps {
@@ -56,14 +57,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </p>
           </div>
         </header>
-        <Footer />
       </div>
     );
   }
 
   // Fetch search results. On the server this calls WordPress directly (no
   // self-HTTP hop); on the client it uses the /api/search route.
-  let results: any[] = [];
+  let results: WP_REST_API_Post[] = [];
   let total = 0;
   let totalPages = 0;
   let error = false;
@@ -83,11 +83,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     "@context": "https://schema.org",
     "@type": "SearchResultsPage",
     name: `Search Results for "${query}"`,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL}/search?q=${encodeURIComponent(query)}`,
+    url: absoluteUrl(`/search?q=${encodeURIComponent(query)}`),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: total,
-      itemListElement: results.map((result: any, index: number) => ({
+      itemListElement: results.map((result, index: number) => ({
         "@type": "ListItem",
         position: (currentPage - 1) * perPage + index + 1,
         // Full WP post objects expose `link` and `title.rendered`.
@@ -118,7 +118,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

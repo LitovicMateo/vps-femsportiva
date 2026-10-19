@@ -3,6 +3,13 @@ import { NextRequest } from "next/server";
 
 export const runtime = "edge";
 
+const BRAND = "#ff0099";
+const INK = "#15171a";
+
+// Limits keep arbitrary query strings from producing oversized/odd cards.
+const LIMITS = { title: 120, subtitle: 160, category: 40, author: 60, siteName: 40 };
+const TYPES = ["default", "post", "category", "author"] as const;
+
 /**
  * Decode HTML entities that WordPress emits in titles/excerpts (e.g. `&#8217;`,
  * `&amp;`). Without this they render literally in the OG image. Edge runtime has
@@ -21,28 +28,46 @@ function decodeEntities(str: string): string {
     .replace(/&amp;/g, "&");
 }
 
+function param(
+  searchParams: URLSearchParams,
+  key: keyof typeof LIMITS,
+  fallback = "",
+): string {
+  const value = decodeEntities(searchParams.get(key) || fallback).trim();
+  const max = LIMITS[key];
+  return value.length > max ? `${value.slice(0, max - 1).trimEnd()}…` : value;
+}
+
+/** Load the white wordmark as a data URI; null (text fallback) if unreachable. */
+async function loadLogo(origin: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${origin}/logo-wordmark-dark.svg`);
+    if (!res.ok) return null;
+    const svg = await res.text();
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams, origin } = new URL(request.url);
 
-    const title = decodeEntities(searchParams.get("title") || "FEM Sportiva");
-    const subtitle = decodeEntities(searchParams.get("subtitle") || "");
-    const category = decodeEntities(searchParams.get("category") || "");
-    const author = decodeEntities(searchParams.get("author") || "");
-    const date = searchParams.get("date") || "";
-    const type = searchParams.get("type") || "default"; // default, post, category, author
-    const siteName = searchParams.get("siteName") || "FEM Sportiva";
+    const title = param(searchParams, "title", "Femsportiva");
+    const subtitle = param(searchParams, "subtitle");
+    const category = param(searchParams, "category");
+    const author = param(searchParams, "author");
+    const siteName = param(searchParams, "siteName", "Femsportiva");
+    const rawType = searchParams.get("type") || "default";
+    const type = (TYPES as readonly string[]).includes(rawType)
+      ? rawType
+      : "default";
 
-    // Define colors based on type
-    const bgGradients = {
-      default: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      post: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      category: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      author: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-    };
-
-    const gradient =
-      bgGradients[type as keyof typeof bgGradients] || bgGradients.default;
+    const logo = await loadLogo(origin);
+    // Smaller title for long headlines so they stay inside the card.
+    const titleSize = title.length > 80 ? 56 : title.length > 50 ? 64 : 76;
+    const label = category || (type === "category" ? "Kategorija" : "");
 
     return new ImageResponse(
       <div
@@ -51,84 +76,73 @@ export async function GET(request: NextRequest) {
           width: "100%",
           display: "flex",
           flexDirection: "column",
-          alignItems: "flex-start",
           justifyContent: "space-between",
-          background: gradient,
-          padding: "80px",
+          background: INK,
+          padding: "64px 72px",
+          borderBottom: `14px solid ${BRAND}`,
         }}
       >
-        {/* Logo/Brand */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            fontSize: 32,
-            fontWeight: 700,
-            color: "white",
+            justifyContent: "space-between",
           }}
         >
-          <div
-            style={{
-              background: "white",
-              width: 50,
-              height: 50,
-              borderRadius: 10,
-              marginRight: 20,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 28,
-            }}
-          >
-            📝
-          </div>
-          {siteName}
-        </div>
-
-        {/* Main Content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 20,
-            maxWidth: "85%",
-          }}
-        >
-          {category && (
-            <div
-              style={{
-                display: "flex",
-                fontSize: 28,
-                fontWeight: 600,
-                color: "rgba(255, 255, 255, 0.9)",
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
-            >
-              {category}
-            </div>
-          )}
-
-          <div
-            style={{
-              display: "flex",
-              fontSize: 72,
-              fontWeight: 900,
-              color: "white",
-              lineHeight: 1.2,
-              textShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            {title}
-          </div>
-
-          {subtitle && (
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt="" width={110} height={74} />
+          ) : (
             <div
               style={{
                 display: "flex",
                 fontSize: 36,
-                fontWeight: 400,
-                color: "rgba(255, 255, 255, 0.85)",
+                fontWeight: 800,
+                color: "white",
+                textTransform: "uppercase",
+                letterSpacing: 4,
+              }}
+            >
+              {siteName}
+            </div>
+          )}
+          {label && (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 26,
+                fontWeight: 700,
+                color: INK,
+                background: BRAND,
+                padding: "8px 20px",
+                borderRadius: 4,
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
+              {label}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: titleSize,
+              fontWeight: 800,
+              color: "white",
+              lineHeight: 1.15,
+            }}
+          >
+            {title}
+          </div>
+          {subtitle && type !== "post" && (
+            <div
+              style={{
+                display: "flex",
+                fontSize: 30,
+                color: "#a9adb1",
                 lineHeight: 1.4,
               }}
             >
@@ -137,42 +151,26 @@ export async function GET(request: NextRequest) {
           )}
         </div>
 
-        {/* Footer */}
         <div
           style={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            width: "100%",
-            fontSize: 24,
-            color: "rgba(255, 255, 255, 0.8)",
+            fontSize: 26,
+            color: "#a9adb1",
           }}
         >
-          {author && (
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div
-                style={{
-                  background: "white",
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  marginRight: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                ✍️
-              </div>
-              {author}
-            </div>
-          )}
-          {date && <div style={{ display: "flex" }}>📅 {date}</div>}
+          <div style={{ display: "flex" }}>{author}</div>
+          <div style={{ display: "flex", color: BRAND, fontWeight: 700 }}>
+            {siteName}
+          </div>
         </div>
       </div>,
       {
         width: 1200,
         height: 630,
+        headers: {
+          "Cache-Control": "public, max-age=86400, s-maxage=604800, immutable",
+        },
       },
     );
   } catch (error) {

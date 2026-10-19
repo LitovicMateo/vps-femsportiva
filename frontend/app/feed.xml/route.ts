@@ -10,7 +10,6 @@ export async function GET() {
     const rssDescription = siteInfo?.description || "Latest posts";
     const itemCount = 20;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const siteName = siteInfo?.name || "Blog";
 
     // Fetch recent posts
     const postsData = await fetchPosts({ perPage: itemCount });
@@ -18,7 +17,7 @@ export async function GET() {
 
     // Build RSS XML
     const rssItems = posts
-      .map((post: any) => {
+      .map((post) => {
         const categories = post._embedded?.["wp:term"]?.[0] || [];
         const postUrl = `${siteUrl}/${categories[0]?.slug || "uncategorized"}/${post.slug}`;
         const author = post._embedded?.author?.[0]?.name || "Unknown";
@@ -34,7 +33,7 @@ export async function GET() {
       <content:encoded><![CDATA[${post.content.rendered}]]></content:encoded>
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       <dc:creator><![CDATA[${author}]]></dc:creator>
-      ${categories.map((cat: any) => `<category><![CDATA[${cat.name}]]></category>`).join("\n      ")}
+      ${categories.map((cat: { name: string }) => `<category><![CDATA[${cat.name}]]></category>`).join("\n      ")}
       ${featuredImage ? `<media:content url="${featuredImage}" medium="image" />` : ""}
     </item>`;
       })

@@ -1,5 +1,5 @@
 .card {
-  background: #ffffff;
+  background: var(--surface);
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
@@ -33,19 +33,19 @@
 .name {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--ink);
   margin-bottom: 0.25rem;
 }
 
 .meta {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--muted);
   margin-bottom: 0.5rem;
 }
 
 .description {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--muted);
   line-height: 1.5;
   margin-top: 0.5rem;
 }

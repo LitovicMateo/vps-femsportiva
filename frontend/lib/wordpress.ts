@@ -458,7 +458,7 @@ export async function fetchPages(params?: {
       if (Array.isArray(pages)) {
         return { pages, total, totalPages };
       }
-    } catch (e) {
+    } catch {
       // Try next URL
     }
   }
@@ -483,16 +483,18 @@ export async function fetchPageBySlug(
 /**
  * Fetch site settings and metadata
  */
-export async function fetchSiteInfo(): Promise<{
+interface SiteInfo {
   name: string;
   description: string;
   url: string;
   home: string;
   gmt_offset: number;
   timezone_string: string;
-} | null> {
+}
+
+export async function fetchSiteInfo(): Promise<SiteInfo | null> {
   const endpoint = `/`;
-  const data = await tryFetch<any>(endpoint, {
+  const data = await tryFetch<SiteInfo>(endpoint, {
     revalidate: 3600,
     tags: ["settings"],
   });

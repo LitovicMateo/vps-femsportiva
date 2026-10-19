@@ -25,6 +25,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") as Theme | null;
 
+    // Reading storage must happen after mount to keep SSR/hydration markup identical.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (storedTheme) {
       setTheme(storedTheme);
     } else {
@@ -36,6 +38,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
 
     setMounted(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   // Update document data-theme attribute when theme changes

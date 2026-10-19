@@ -1,0 +1,246 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--placeholder);
+}
+
+.avatarImg {
+  object-fit: cover;
+}
+
+.label {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.name,
+.nameLink {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  color: var(--accent);
+}
+
+.bio {
+  margin: 0;
+  color: var(--text-2);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--surface);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.button:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ---------- home (mobile first) ---------- */
+.home {
+  gap: 12px;
+  padding: 24px 20px;
+}
+.home .avatar {
+  width: 64px;
+  height: 64px;
+}
+.home .label {
+  font-size: 13px;
+}
+.home .titles {
+  gap: 2px;
+}
+.home .name {
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+  .home {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 24px;
+    row-gap: 6px;
+    padding: 28px;
+  }
+  /* flatten head so avatar/titles/bio/button lay out in one grid */
+  .home .head {
+    display: contents;
+  }
+  .home .avatar {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    width: 80px;
+    height: 80px;
+  }
+  .home .titles {
+    grid-column: 2;
+    gap: 6px;
+  }
+  .home .bio {
+    grid-column: 2;
+  }
+  .home .button {
+    grid-column: 2;
+    margin-top: 6px;
+    height: auto;
+    padding: 0;
+    background: none;
+    color: var(--accent);
+    border-radius: 0;
+  }
+  .home .button:hover {
+    background: none;
+    color: var(--ink);
+  }
+  .home .button::after {
+    content: " →";
+    white-space: pre;
+  }
+  .home .label {
+    font-size: 14px;
+  }
+  .home .name {
+    font-size: 26px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 32px;
+    padding: 36px 40px;
+  }
+  .home .avatar {
+    width: 96px;
+    height: 96px;
+  }
+  .home .bio {
+    max-width: 680px;
+  }
+  .home .label {
+    font-size: 15px;
+  }
+  .home .name {
+    font-size: 30px;
+    line-height: 1.1;
+  }
+  .home .button {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    align-self: center;
+    margin: 0;
+    height: 46px;
+    padding: 0 22px;
+    background: var(--ink);
+    color: var(--surface);
+    border-radius: 999px;
+  }
+  .home .button:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .home .button::after {
+    content: none;
+  }
+}
+
+/* ---------- article ---------- */
+.article {
+  gap: 10px;
+  padding: 20px;
+}
+.article .avatar {
+  width: 56px;
+  height: 56px;
+}
+.article .label {
+  font-size: 12px;
+}
+.article .nameLink {
+  font-size: 22px;
+}
+
+@media (min-width: 768px) {
+  .article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 20px;
+    row-gap: 4px;
+    align-items: start;
+    padding: 24px;
+  }
+  .article .head {
+    display: contents;
+  }
+  .article .avatar {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    width: 64px;
+    height: 64px;
+  }
+  .article .titles {
+    grid-column: 2;
+    gap: 4px;
+  }
+  .article .bio {
+    grid-column: 2;
+  }
+  .article .label {
+    font-size: 13px;
+  }
+  .article .nameLink {
+    font-size: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .article .avatar {
+    width: 72px;
+    height: 72px;
+  }
+}

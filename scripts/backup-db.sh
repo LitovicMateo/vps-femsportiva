@@ -63,6 +63,10 @@ if "${COMPOSE[@]}" exec -T database mysqldump \
     echo "✓ Backup created successfully: ${BACKUP_FILE}"
     BACKUP_SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
     echo "  Backup size: ${BACKUP_SIZE}"
+
+    # Prune old backups for this environment (default: keep 14 days).
+    RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+    find "$BACKUP_DIR" -name "backup_${ENV}_*.sql.gz" -type f -mtime +"$RETENTION_DAYS" -delete
 else
     echo "✗ Backup failed"
     rm -f "$BACKUP_FILE"

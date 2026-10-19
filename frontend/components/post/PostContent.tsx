@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { transformWordPressUrl } from "@/lib/utils";
+import { useEffect, useMemo, useRef } from "react";
 import styles from "./PostContent.module.css";
 
 interface PostContentProps {
@@ -24,9 +23,13 @@ export default function PostContent({ content }: PostContentProps) {
       .replace(/http:\/\/wordpress\//g, `${externalUrl}${pathPrefix}/`);
   }, [content]);
 
+  const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
     // Add captions to images after component mounts
-    const figures = document.querySelectorAll(".prose figure");
+    const figures = root.querySelectorAll(".prose figure");
 
     figures.forEach((figure) => {
       const img = figure.querySelector("img");
@@ -39,13 +42,14 @@ export default function PostContent({ content }: PostContentProps) {
         // If there's an alt text but no figcaption, create one
         const caption = document.createElement("figcaption");
         caption.className = styles.caption;
+        caption.setAttribute("aria-hidden", "true");
         caption.textContent = img.alt;
         figure.appendChild(caption);
       }
     });
 
     // Handle standalone images (not in figure tags)
-    const standaloneImages = document.querySelectorAll(
+    const standaloneImages = root.querySelectorAll(
       ".prose img:not(figure img)",
     );
 
@@ -57,15 +61,17 @@ export default function PostContent({ content }: PostContentProps) {
       ) {
         const caption = document.createElement("p");
         caption.className = styles.caption;
+        caption.setAttribute("aria-hidden", "true");
         caption.textContent = imgElement.alt;
         imgElement.after(caption);
       }
     });
-  }, []);
+  }, [transformedContent]);
 
   return (
     <div
-      className="prose prose-lg"
+      ref={ref}
+      className={`prose ${styles.root}`}
       dangerouslySetInnerHTML={{ __html: transformedContent }}
     />
   );

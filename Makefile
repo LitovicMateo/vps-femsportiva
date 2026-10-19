@@ -1,6 +1,6 @@
 .PHONY: help dev staging prod dev-build staging-build prod-build \
 	logs logs-wp logs-frontend logs-nginx down clean \
-	backup-db restore-db sync-staging init-ssl \
+	backup-db restore-db sync-staging init-ssl install-backup-cron \
 	shell-wp shell-db shell-frontend
 
 # Environment for utility targets (logs/down/clean/shell-*). Override per run,
@@ -40,6 +40,7 @@ help:
 	@echo ""
 	@echo "Production Setup:"
 	@echo "  make init-ssl         - Initialize SSL certificates (run once on VPS)"
+	@echo "  make install-backup-cron - Install daily DB backup cron (run on VPS)"
 	@echo ""
 
 # Development environment
@@ -124,6 +125,10 @@ sync-staging:
 init-ssl:
 	@echo "Initializing SSL certificates..."
 	@bash scripts/init-ssl.sh
+
+# Install daily DB backup cron job (run on the VPS; ENV defaults to prod)
+install-backup-cron:
+	@bash scripts/install-backup-cron.sh $(if $(filter command line,$(origin ENV)),$(ENV),prod)
 
 # Shell access (scope with ENV=dev|staging|prod, default dev)
 shell-wp:

@@ -1,4 +1,5 @@
 // Client for fetching data - uses WordPress API directly on server, Next.js API routes on client
+import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME } from "@/lib/site";
 import * as wordpressClient from "./wordpress";
 
 // Use NEXT_PUBLIC_SITE_URL for absolute URLs, fallback to localhost for development
@@ -12,19 +13,6 @@ const getBaseUrl = () => {
 };
 
 const isServer = typeof window === "undefined";
-
-interface PaginatedResponse<T> {
-  success: boolean;
-  data?: T;
-  pagination?: {
-    total: number;
-    totalPages: number;
-    currentPage: number;
-    perPage: number;
-  };
-  error?: string;
-  message?: string;
-}
 
 /**
  * Fetch posts from API
@@ -396,9 +384,20 @@ export async function searchPostsAPI(
 /**
  * Fetch site settings from API
  */
-const DEFAULT_SITE_TITLE = "FEM Sportiva";
-const DEFAULT_SITE_DESCRIPTION = "Blog o sportu i životnom stilu";
-const DEFAULT_SITE_KEYWORDS = ["blog", "sport", "femsportiva"];
+const DEFAULT_SITE_TITLE = SITE_NAME;
+const DEFAULT_SITE_DESCRIPTION = SITE_DESCRIPTION;
+const DEFAULT_SITE_KEYWORDS = SITE_KEYWORDS;
+
+// Taglines WordPress ships with; treat them as "not set" so they never reach
+// meta tags.
+const WP_DEFAULT_TAGLINES = new Set(["just another wordpress site", ""]);
+
+function resolveTagline(tagline: string | undefined): string {
+  const clean = (tagline || "").trim();
+  return WP_DEFAULT_TAGLINES.has(clean.toLowerCase())
+    ? DEFAULT_SITE_DESCRIPTION
+    : clean;
+}
 
 export async function fetchSiteSettingsAPI() {
   // On server, fetch site info directly from WordPress
@@ -406,7 +405,7 @@ export async function fetchSiteSettingsAPI() {
     const siteInfo = await wordpressClient.fetchSiteInfo();
     return {
       siteTitle: siteInfo?.name || DEFAULT_SITE_TITLE,
-      siteDescription: siteInfo?.description || DEFAULT_SITE_DESCRIPTION,
+      siteDescription: resolveTagline(siteInfo?.description),
       siteKeywords: DEFAULT_SITE_KEYWORDS,
     };
   }
@@ -437,7 +436,7 @@ export async function fetchSiteSettingsAPI() {
 
   return {
     siteTitle: data.site.name || DEFAULT_SITE_TITLE,
-    siteDescription: data.site.description || DEFAULT_SITE_DESCRIPTION,
+    siteDescription: resolveTagline(data.site.description),
     siteKeywords: DEFAULT_SITE_KEYWORDS,
   };
 }

@@ -1,4 +1,4 @@
-export default function StructuredData({ data }: { data: any }) {
+export default function StructuredData({ data }: { data: Record<string, unknown> }) {
   return (
     <script
       type="application/ld+json"

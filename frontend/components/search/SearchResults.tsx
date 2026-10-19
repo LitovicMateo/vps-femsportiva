@@ -1,9 +1,10 @@
 import Link from "next/link";
-import PostCard from "@/components/post/PostCard";
+import ArticleCard from "@/components/post/ArticleCard";
+import type { WP_REST_API_Post } from "@/types/wordpress";
 import styles from "./SearchResults.module.css";
 
 interface SearchResultsProps {
-  results: any[];
+  results: WP_REST_API_Post[];
   query: string;
   error?: boolean;
 }
@@ -39,8 +40,15 @@ export default function SearchResults({
 
   return (
     <div className={styles.resultsGrid}>
-      {results.map((post: any) => (
-        <PostCard key={post.id} post={post} />
+      {results.map((post) => (
+        <ArticleCard
+          key={post.id}
+          post={post}
+          variant="grid"
+          showExcerpt
+          showKicker
+          mobileList
+        />
       ))}
     </div>
   );

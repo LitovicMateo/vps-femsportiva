@@ -1,288 +1,112 @@
-.container {
-  min-height: 100vh;
-  background: var(--background);
-  display: flex;
-  flex-direction: column;
-}
-
-.header {
-  background: var(--color-card);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.headerContent {
-  max-width: 896px;
-  margin: 0 auto;
-  padding: 1.5rem 1.5rem;
-}
-
-.backLinkSkeleton {
-  width: 150px;
-  height: 20px;
-  background: var(--color-border);
-  border-radius: 4px;
-}
-
 .main {
-  max-width: 896px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
-  width: 100%;
-  flex: 1;
+  flex-grow: 1;
+  padding: 24px 0 64px;
 }
-
 .article {
-  background: var(--color-card);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Featured Image Skeleton */
-.featuredImageSkeleton {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  overflow: hidden;
-  background: var(--color-border);
-  position: relative;
-}
-
-/* Content Area */
-.content {
-  padding: 2rem;
-}
-
-/* Category Badge Skeleton */
-.categoryBadgeSkeleton {
-  width: 120px;
-  height: 20px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Title Skeleton */
-.titleSkeleton {
-  margin-bottom: 1.5rem;
-}
-
-.titleLine {
-  height: 36px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.titleLineShort {
-  width: 65%;
-}
-
-/* Meta Skeleton */
-.metaSkeleton {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.authorInfoSkeleton {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.avatarSkeleton {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--color-border);
-  position: relative;
-  overflow: hidden;
-}
-
-.authorDetailsSkeleton {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 24px;
 }
-
-.authorNameSkeleton {
-  width: 120px;
-  height: 16px;
-  background: var(--color-border);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-.dateSkeleton {
-  width: 100px;
-  height: 14px;
-  background: var(--color-border);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Content Skeleton */
-.contentSkeleton {
-  margin-bottom: 2rem;
-}
-
-.paragraphSkeleton {
-  margin-bottom: 1.5rem;
-}
-
-.line {
-  height: 18px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.lineShort {
-  width: 75%;
-}
-
-/* Share Buttons Skeleton */
-.shareButtonsSkeleton {
+.header {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 16px;
 }
-
-.shareButton {
-  width: 100px;
-  height: 40px;
-  background: var(--color-border);
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Related Posts Skeleton */
-.relatedSkeleton {
-  margin-top: 4rem;
-}
-
-.relatedTitleSkeleton {
-  width: 200px;
-  height: 28px;
-  background: var(--color-border);
+.bar {
+  background: var(--rule);
   border-radius: 4px;
-  margin-bottom: 2rem;
-  position: relative;
-  overflow: hidden;
+  animation: pulse 1.4s ease-in-out infinite;
 }
-
-.relatedGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-}
-
-.relatedCard {
-  background: var(--color-card);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.relatedImage {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  background: var(--color-border);
-  position: relative;
-  overflow: hidden;
-}
-
-.relatedCardContent {
-  padding: 1.5rem;
-}
-
-.relatedCategory {
-  width: 80px;
+.kicker {
+  width: 90px;
   height: 16px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-  position: relative;
-  overflow: hidden;
 }
-
-.relatedCardTitle {
-  height: 20px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-  position: relative;
-  overflow: hidden;
+.titleLine {
+  height: 38px;
 }
-
-.relatedCardTitleShort {
+.short {
   width: 60%;
 }
-
-.relatedMeta {
-  width: 100px;
+.byline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+}
+.meta {
+  width: 200px;
   height: 14px;
-  background: var(--color-border);
-  border-radius: 4px;
-  margin-top: 1rem;
-  position: relative;
-  overflow: hidden;
 }
-
-/* Shimmer Animation */
-.shimmer::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0,
-    rgba(255, 255, 255, 0.2) 20%,
-    rgba(255, 255, 255, 0.5) 60%,
-    rgba(255, 255, 255, 0)
-  );
-  animation: shimmer 2s infinite;
+.figure .image {
+  aspect-ratio: 16 / 10;
+  border-radius: 0;
 }
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 16px;
+}
+.line {
+  height: 18px;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
   }
 }
-
-/* Responsive Design */
-@media (max-width: 768px) {
+@media (min-width: 768px) {
   .main {
-    padding: 2rem 1rem;
+    padding: 48px 0 80px;
   }
-
-  .content {
-    padding: 1.5rem;
+  .article {
+    gap: 36px;
   }
-
+  .header {
+    padding: 0 56px;
+  }
   .titleLine {
-    height: 28px;
+    height: 52px;
   }
-
-  .relatedGrid {
-    grid-template-columns: 1fr;
+  .figure {
+    padding: 0 32px;
+  }
+  .figure .image {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-img);
+  }
+  .body {
+    padding: 0 56px;
+  }
+}
+@media (min-width: 1024px) {
+  .header {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0;
+    align-items: center;
+  }
+  .titleLine {
+    height: 64px;
+    width: 100%;
+  }
+  .short {
+    width: 60%;
+  }
+  .figure {
+    width: 100%;
+    max-width: 1264px;
+    margin: 0 auto;
+  }
+  .body {
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0;
   }
 }

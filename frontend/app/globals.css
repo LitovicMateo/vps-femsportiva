@@ -5,56 +5,83 @@
   padding: 0;
 }
 
-html,
-body {
+html {
   height: 100%;
 }
 
+/* Design tokens */
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
-  --color-primary: #ff0099;
+  --bg: #fafaf7;
+  --surface: #ffffff;
+  --ink: #15171a;
+  --text: #24272b;
+  --text-2: #3e4247;
+  --muted: #5b6066;
+  --rule: #e3e3de;
+  --rule-soft: #efefea;
+  --input-bg: #f2f2ee;
+  --chip-bg: #eeeee9;
+  --accent: #d1007d;
+  --brand: #ff0099;
+  --footer-bg: #15171a;
+  --footer-text: #e8e8e3;
+  --footer-muted: #a9adb1;
+  --footer-rule: #2e3136;
+  --placeholder: #d9dcd3;
+  --radius-img: 6px;
+  --radius-card: 8px;
+
+  /* Legacy aliases (un-migrated pages) */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --color-primary: var(--brand);
   --color-primary-hover: #cc0077;
   --color-hover: rgba(0, 0, 0, 0.05);
-  --color-border: #e5e7eb;
-  --color-muted: #6b7280;
-  --color-card: #ffffff;
+  --color-border: var(--rule);
+  --color-muted: var(--muted);
+  --color-card: var(--surface);
   --color-code-bg: #f3f4f6;
   --color-code-pre: #1f2937;
   --color-code-text: #f9fafb;
-  --color-link: #2563eb;
-  --color-link-hover: #1d4ed8;
-  --font-geist-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
-  --font-geist-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --color-link: var(--accent);
+  --color-link-hover: var(--brand);
 }
 
-/* Dark mode theme variables */
 [data-theme="dark"] {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --color-primary: #ff0099;
+  --bg: #111214;
+  --surface: #1a1c1f;
+  --ink: #edede8;
+  --text: #d6d6d1;
+  --text-2: #bcbcb7;
+  --muted: #a3a7ab;
+  --rule: #2e3136;
+  --rule-soft: #232528;
+  --input-bg: #1f2124;
+  --chip-bg: #26282c;
+  --accent: #ff4db3;
+  --brand: #ff0099;
+  --footer-bg: #0b0c0d;
+  --footer-text: #e8e8e3;
+  --footer-muted: #a9adb1;
+  --footer-rule: #2e3136;
+  --placeholder: #2a2c30;
+
   --color-primary-hover: #ff33aa;
   --color-hover: rgba(255, 255, 255, 0.1);
-  --color-border: #262626;
-  --color-muted: #a1a1a1;
-  --color-card: #171717;
   --color-code-bg: #262626;
-  --color-code-pre: #1f2937;
-  --color-code-text: #f9fafb;
-  --color-link: #60a5fa;
-  --color-link-hover: #93c5fd;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans);
-  line-height: 1.6;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 /* Utility for line clamping */
@@ -65,9 +92,46 @@ body {
   overflow: hidden;
 }
 
-/* Prose styles for WordPress content */
+/* Prose styles for WordPress content (mockup article body).
+   Mobile <768, tablet 768-1023, desktop >=1024. */
 .prose {
+  --prose-gap: 20px;
+  --prose-h2: 28px;
+  --prose-h2-extra: 12px;
+  --prose-quote: 26px;
+  --prose-quote-pad: 18px;
+  --prose-caption: 13px;
   max-width: 65ch;
+  font-size: 18px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+@media (min-width: 768px) {
+  .prose {
+    --prose-gap: 24px;
+    --prose-h2: 32px;
+    --prose-h2-extra: 14px;
+    --prose-quote: 30px;
+    --prose-quote-pad: 24px;
+    --prose-caption: 14px;
+    line-height: 1.7;
+  }
+}
+
+@media (min-width: 1024px) {
+  .prose {
+    --prose-gap: 28px;
+    --prose-h2: 34px;
+    --prose-h2-extra: 16px;
+    --prose-quote: 32px;
+    --prose-quote-pad: 28px;
+    font-size: 19px;
+  }
+}
+
+.prose > * + * {
+  margin-top: var(--prose-gap);
 }
 
 .prose h1,
@@ -76,63 +140,113 @@ body {
 .prose h4,
 .prose h5,
 .prose h6 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  font-family: var(--font-display), var(--font-body), sans-serif;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.1;
+  color: var(--ink);
 }
 
-.prose h1 {
-  font-size: 2.25em;
-}
-
+.prose h1,
 .prose h2 {
-  font-size: 1.875em;
+  font-size: var(--prose-h2);
 }
 
 .prose h3 {
-  font-size: 1.5em;
+  font-size: calc(var(--prose-h2) * 0.8);
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-size: calc(var(--prose-h2) * 0.65);
+}
+
+.prose > h1,
+.prose > h2,
+.prose > h3,
+.prose > h4 {
+  margin-top: calc(var(--prose-gap) + var(--prose-h2-extra));
 }
 
 .prose p {
-  margin-top: 1em;
-  margin-bottom: 1em;
+  margin-bottom: 0;
+}
+
+.prose strong,
+.prose b {
+  font-weight: 600;
 }
 
 .prose a {
-  color: var(--color-link);
-  text-decoration: none;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .prose a:hover {
-  color: var(--color-link-hover);
-  text-decoration: underline;
+  color: var(--brand);
 }
 
 .prose img {
-  border-radius: 0.5rem;
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-img);
+}
+
+.prose figure {
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: var(--radius-img);
+}
+
+.prose figure img {
+  display: block;
+  width: 100%;
+}
+
+.prose figcaption {
+  margin-top: 10px;
+  font-size: var(--prose-caption);
+  line-height: 1.5;
+  color: var(--muted);
 }
 
 .prose ul,
 .prose ol {
-  margin-top: 1em;
-  margin-bottom: 1em;
-  padding-left: 1.5em;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .prose li {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin: 0;
 }
 
 .prose blockquote {
-  border-left: 4px solid var(--color-border);
-  padding-left: 1em;
-  font-style: italic;
-  color: var(--color-muted);
-  margin: 1.5em 0;
+  border: 0;
+  box-shadow: inset 4px 0 0 var(--accent);
+  padding: 4px 0 4px var(--prose-quote-pad);
+  font-family: var(--font-display), var(--font-body), sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: var(--prose-quote);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.prose blockquote cite {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: var(--prose-caption, 14px);
+  font-weight: 500;
+  font-style: normal;
+  color: var(--muted);
+}
+
+.prose blockquote p {
+  margin: 0;
 }
 
 .prose code {
@@ -148,7 +262,6 @@ body {
   padding: 1em;
   border-radius: 0.5rem;
   overflow-x: auto;
-  margin: 1.5em 0;
 }
 
 .prose pre code {
@@ -157,7 +270,7 @@ body {
   color: inherit;
 }
 
+/* Kept for compatibility; size is driven by .prose breakpoints */
 .prose-lg {
-  font-size: 1.125rem;
-  line-height: 1.75;
+  line-height: 1.7;
 }

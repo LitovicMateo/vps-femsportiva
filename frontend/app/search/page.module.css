@@ -1,13 +1,13 @@
 .container {
   min-height: 100vh;
-  background: #fafafa;
+  background: var(--bg);
   display: flex;
   flex-direction: column;
 }
 
 .header {
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
 }
 
 .headerContent {
@@ -17,7 +17,7 @@
 }
 
 .backLink {
-  color: #0066cc;
+  color: var(--accent);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
@@ -27,24 +27,24 @@
 }
 
 .backLink:hover {
-  color: #0052a3;
+  color: var(--brand);
 }
 
 .title {
   font-size: 2.25rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--ink);
 }
 
 .description {
   margin-top: 0.5rem;
-  color: #666;
+  color: var(--muted);
 }
 
 .resultCount {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #999;
+  color: var(--muted);
 }
 
 .main {
@@ -61,14 +61,14 @@
 }
 
 .emptyText {
-  color: #333;
+  color: var(--text);
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
   font-weight: 500;
 }
 
 .emptySubtext {
-  color: #999;
+  color: var(--muted);
   font-size: 1rem;
   margin-bottom: 2rem;
 }
@@ -76,8 +76,8 @@
 .homeButton {
   display: inline-block;
   padding: 0.75rem 1.5rem;
-  background: #0066cc;
-  color: #ffffff;
+  background: var(--accent);
+  color: #fff;
   text-decoration: none;
   border-radius: 8px;
   font-weight: 500;
@@ -85,13 +85,7 @@
 }
 
 .homeButton:hover {
-  background: #0052a3;
-}
-
-.resultsGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  background: var(--brand);
 }
 
 @media (min-width: 640px) {
@@ -116,4 +110,9 @@
   .title {
     font-size: 2.5rem;
   }
+}
+
+/* Pagination no longer carries its own top margin */
+.main > nav[aria-label="Stranice"] {
+  margin-top: 2rem;
 }

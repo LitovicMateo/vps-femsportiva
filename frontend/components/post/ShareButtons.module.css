@@ -1,127 +1,66 @@
-.shareContainer {
-  margin: 3rem 0;
-  padding: 2rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #e5e5e5;
+/* inline: tablet/desktop row; grid: mobile 2x2. Each instance is hidden at the other breakpoints. */
+.root {
+  color: var(--muted);
 }
 
-.shareTitle {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  text-align: center;
-}
-
-.shareButtons {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.shareButton {
-  display: flex;
+.pill {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #ddd;
-  color: #666;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
   text-decoration: none;
+  cursor: pointer;
+}
+.pill:hover {
+  border-color: var(--ink);
 }
 
-.shareButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-color: #0070f3;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.shareButton:active {
-  transform: translateY(0);
+.inline {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1;
+}
+.inline .label {
+  font-weight: 600;
+}
+.inline .pill {
+  height: 36px;
+  padding: 0 14px;
 }
 
-.icon {
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1;
+}
+.grid .pill {
+  height: 44px;
+  font-weight: 600;
 }
 
-/* Specific colors for each platform */
-.shareButton:nth-child(1):hover {
-  /* Twitter/X */
-  background: #000000;
-  color: white;
-  border-color: #000000;
-}
-
-.shareButton:nth-child(2):hover {
-  /* Facebook */
-  background: #1877f2;
-  color: white;
-  border-color: #1877f2;
-}
-
-.shareButton:nth-child(3):hover {
-  /* LinkedIn */
-  background: #0a66c2;
-  color: white;
-  border-color: #0a66c2;
-}
-
-.shareButton:nth-child(4):hover {
-  /* Reddit */
-  background: #ff4500;
-  color: white;
-  border-color: #ff4500;
-}
-
-.shareButton:nth-child(5):hover {
-  /* WhatsApp */
-  background: #25d366;
-  color: white;
-  border-color: #25d366;
-}
-
-.shareButton:nth-child(6):hover {
-  /* Telegram */
-  background: #0088cc;
-  color: white;
-  border-color: #0088cc;
-}
-
-.shareButton:nth-child(7):hover {
-  /* Email */
-  background: #ea4335;
-  color: white;
-  border-color: #ea4335;
-}
-
-.shareButton:nth-child(8):hover {
-  /* Copy Link */
-  background: #0070f3;
-  color: white;
-  border-color: #0070f3;
-}
-
-@media (max-width: 768px) {
-  .shareButtons {
-    gap: 0.75rem;
+@media (min-width: 768px) {
+  .inline {
+    display: flex;
   }
-
-  .shareButton {
-    width: 44px;
-    height: 44px;
-  }
-
-  .icon {
-    width: 20px;
-    height: 20px;
+  .grid {
+    display: none;
   }
 }

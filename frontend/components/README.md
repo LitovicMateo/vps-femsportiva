@@ -7,11 +7,10 @@ This directory contains all React components organized by functionality.
 ```
 components/
 ├── layout/          # Layout components (Header, Footer)
-├── post/            # Post-related components (PostCard, PostContent, etc.)
-├── author/          # Author components (AuthorCard)
-├── ui/              # Reusable UI components (Pagination, ThemeToggle)
+├── post/            # Post-related components (ArticleCard, PostContent, etc.)
+├── author/          # Author components (AuthorCard, AuthorBox)
+├── ui/              # Reusable UI components (Pagination)
 ├── seo/             # SEO and provider components (StructuredData, ClientProviders)
-├── home/            # Homepage-specific components
 └── search/          # Search page-specific components
 ```
 
@@ -21,7 +20,8 @@ components/
 
 Components that form the main page structure:
 
-- **Header** - Main navigation header with social links and search
+- **Header** - Main navigation header (category nav, search, theme toggle)
+- **MobileMenu** - Mobile navigation drawer used by Header
 - **HeaderWrapper** - Server component wrapper for Header with data fetching
 - **Footer** - Site footer
 
@@ -29,24 +29,24 @@ Components that form the main page structure:
 
 All components related to blog posts:
 
-- **PostCard** - Post preview card with metadata
+- **ArticleCard** - Post card (lead/grid/list variants)
+- **SectionHeading** - Section title with rule
 - **PostContent** - Renders WordPress post content
 - **ShareButtons** - Social sharing buttons
 - **ViewCounter** - Tracks and displays post views
-- **PaginatedPosts** - Client-side pagination for post lists
 
 ### Author (`/author`)
 
 Components for displaying author information:
 
 - **AuthorCard** - Author profile card
+- **AuthorBox** - Author bio box (article and home variants)
 
 ### UI (`/ui`)
 
 Reusable UI components:
 
 - **Pagination** - Page navigation component
-- **ThemeToggle** - Dark/light theme switcher
 
 ### SEO (`/seo`)
 
@@ -54,15 +54,6 @@ SEO and provider components:
 
 - **StructuredData** - JSON-LD structured data for SEO
 - **ClientProviders** - Client-side context providers
-
-### Home (`/home`)
-
-Homepage-specific sections:
-
-- **HeroSection** - Featured post hero banner
-- **RecentNewsSection** - Latest posts section with sidebar
-- **CategorySection** - Category-specific post listings
-- **FeaturedSidebar** - Sidebar with featured post and about section
 
 ### Search (`/search`)
 
@@ -77,7 +68,7 @@ Search page components:
 
 ```typescript
 import Header from "@/components/layout/Header";
-import PostCard from "@/components/post/PostCard";
+import ArticleCard from "@/components/post/ArticleCard";
 import Pagination from "@/components/ui/Pagination";
 ```
 
@@ -85,8 +76,8 @@ import Pagination from "@/components/ui/Pagination";
 
 ```typescript
 import { Header, Footer } from "@/components/layout";
-import { PostCard, PostContent } from "@/components/post";
-import { Pagination, ThemeToggle } from "@/components/ui";
+import { ArticleCard, PostContent } from "@/components/post";
+import { Pagination } from "@/components/ui";
 ```
 
 ## Benefits

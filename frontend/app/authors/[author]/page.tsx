@@ -1,18 +1,23 @@
 import { fetchPostsByAuthorAPI } from "@/lib/api";
 import { fetchAuthors } from "@/lib/wordpress";
-import PostCard from "@/components/post/PostCard";
+import ArticleCard from "@/components/post/ArticleCard";
 import Pagination from "@/components/ui/Pagination";
-import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { WP_REST_API_Post } from "@/types/wordpress";
+import {
+  absoluteUrl,
+  paginatedPath,
+  truncate,
+} from "@/lib/seo";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
 interface AuthorPageProps {
-  params: { author: string };
-  searchParams: { page?: string };
+  params: Promise<{ author: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 // Pre-render each author archive at build time; unknown authors render on-demand.
@@ -21,10 +26,16 @@ export async function generateStaticParams() {
   return authors.map((author) => ({ author: author.slug }));
 }
 
+function parsePage(value: string | undefined): number {
+  return Math.max(1, parseInt(value ?? "1", 10) || 1);
+}
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: AuthorPageProps): Promise<Metadata> {
   const resolvedParams = await params;
+  const pageNum = parsePage((await searchParams).page);
   const data = await fetchPostsByAuthorAPI(resolvedParams.author, 1, 1);
   const author = data.author;
 
@@ -34,28 +45,36 @@ export async function generateMetadata({
     };
   }
 
-  const description = author.description || `Objave autora ${author.name}`;
+  const description = truncate(
+    author.description ||
+      `Svi članci autora ${author.name} na Femsportivi: vijesti, priče i analize iz ženskog sporta.`,
+  );
+  const title =
+    pageNum > 1
+      ? `Objave autora ${author.name} – stranica ${pageNum}`
+      : `Objave autora ${author.name}`;
+  const canonical = paginatedPath(`/authors/${resolvedParams.author}`, pageNum);
 
   return {
-    title: `Objave autora ${author.name}`,
+    title,
     description: description,
     openGraph: {
-      title: `Objave autora ${author.name}`,
+      title,
       description: description,
       type: "profile",
-      url: `/authors/${resolvedParams.author}`,
+      url: canonical,
       images: author.avatar_urls
         ? [{ url: author.avatar_urls["96"] }]
         : undefined,
     },
     twitter: {
       card: "summary",
-      title: `Objave autora ${author.name}`,
+      title,
       description: description,
       images: author.avatar_urls ? [author.avatar_urls["96"]] : undefined,
     },
     alternates: {
-      canonical: `/authors/${resolvedParams.author}`,
+      canonical,
     },
   };
 }
@@ -66,7 +85,7 @@ export default async function AuthorPage({
 }: AuthorPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const currentPage = parseInt(resolvedSearchParams.page || "1");
+  const currentPage = parsePage(resolvedSearchParams.page);
   const perPage = 10;
 
   const data = await fetchPostsByAuthorAPI(
@@ -91,7 +110,7 @@ export default async function AuthorPage({
       "@type": "Person",
       name: author.name,
       description: author.description,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${resolvedParams.author}`,
+      url: absoluteUrl(`/authors/${resolvedParams.author}`),
       image: author.avatar_urls ? author.avatar_urls["96"] : undefined,
     },
     breadcrumb: {
@@ -101,13 +120,13 @@ export default async function AuthorPage({
           "@type": "ListItem",
           position: 1,
           name: "Autori",
-          item: `${process.env.NEXT_PUBLIC_SITE_URL}/authors`,
+          item: absoluteUrl("/authors"),
         },
         {
           "@type": "ListItem",
           position: 2,
           name: author.name,
-          item: `${process.env.NEXT_PUBLIC_SITE_URL}/authors/${resolvedParams.author}`,
+          item: absoluteUrl(`/authors/${resolvedParams.author}`),
         },
       ],
     },
@@ -154,8 +173,8 @@ export default async function AuthorPage({
           <>
             <h2 className={styles.sectionTitle}>Objave autora {author.name}</h2>
             <div className={styles.postsGrid}>
-              {posts.map((post: any) => (
-                <PostCard key={post.id} post={post} />
+              {posts.map((post: WP_REST_API_Post) => (
+                <ArticleCard key={post.id} post={post} variant="grid" showExcerpt showKicker mobileList />
               ))}
             </div>
 
@@ -168,7 +187,6 @@ export default async function AuthorPage({
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

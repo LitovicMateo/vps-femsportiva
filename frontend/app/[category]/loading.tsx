@@ -1,79 +1,25 @@
 import styles from "./loading.module.css";
 
+const sh = `${styles.block} ${styles.shimmer}`;
+
 export default function Loading() {
   return (
-    <div className={styles.container}>
-      {/* Header Skeleton */}
+    <div className={styles.container} aria-busy="true">
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <div className={`${styles.titleSkeleton} ${styles.shimmer}`}></div>
-          <div
-            className={`${styles.descriptionSkeleton} ${styles.shimmer}`}
-          ></div>
-          <div className={`${styles.countSkeleton} ${styles.shimmer}`}></div>
+          <div className={`${styles.title} ${sh}`} />
+          <div className={`${styles.desc} ${sh}`} />
         </div>
       </header>
-
       <main className={styles.main}>
-        {/* Posts Grid Skeleton */}
-        <div className={styles.postsGrid}>
+        <div className={styles.grid}>
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className={styles.postCard}>
-              {/* Featured Image */}
-              <div className={`${styles.postImage} ${styles.shimmer}`}></div>
-
-              {/* Content */}
-              <div className={styles.postContent}>
-                {/* Category Badge */}
-                <div
-                  className={`${styles.categoryBadge} ${styles.shimmer}`}
-                ></div>
-
-                {/* Title */}
-                <div className={styles.postTitle}>
-                  <div
-                    className={`${styles.titleLine} ${styles.shimmer}`}
-                  ></div>
-                  <div
-                    className={`${styles.titleLine} ${styles.titleLineShort} ${styles.shimmer}`}
-                  ></div>
-                </div>
-
-                {/* Excerpt */}
-                <div className={styles.excerpt}>
-                  <div
-                    className={`${styles.excerptLine} ${styles.shimmer}`}
-                  ></div>
-                  <div
-                    className={`${styles.excerptLine} ${styles.shimmer}`}
-                  ></div>
-                  <div
-                    className={`${styles.excerptLine} ${styles.excerptLineShort} ${styles.shimmer}`}
-                  ></div>
-                </div>
-
-                {/* Meta */}
-                <div className={styles.postMeta}>
-                  <div className={styles.authorMeta}>
-                    <div className={`${styles.avatar} ${styles.shimmer}`}></div>
-                    <div className={styles.authorInfo}>
-                      <div
-                        className={`${styles.authorName} ${styles.shimmer}`}
-                      ></div>
-                      <div className={`${styles.date} ${styles.shimmer}`}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div key={i}>
+              <div className={`${styles.image} ${sh}`} />
+              <div className={`${styles.line} ${styles.lineTitle} ${sh}`} />
+              <div className={`${styles.line} ${styles.short} ${sh}`} />
             </div>
           ))}
-        </div>
-
-        {/* Pagination Skeleton */}
-        <div className={styles.pagination}>
-          <div className={`${styles.paginationButton} ${styles.shimmer}`}></div>
-          <div className={`${styles.paginationButton} ${styles.shimmer}`}></div>
-          <div className={`${styles.paginationButton} ${styles.shimmer}`}></div>
         </div>
       </main>
     </div>

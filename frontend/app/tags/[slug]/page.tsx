@@ -1,17 +1,31 @@
 import { fetchPostsByTagAPI, fetchSiteSettingsAPI } from "@/lib/api";
 import { fetchTags } from "@/lib/wordpress";
-import PostCard from "@/components/post/PostCard";
+import ArticleCard from "@/components/post/ArticleCard";
 import Pagination from "@/components/ui/Pagination";
-import Footer from "@/components/layout/Footer";
 import StructuredData from "@/components/seo/StructuredData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getPrimaryCategorySlug } from "@/lib/utils";
+import type { WP_REST_API_Post } from "@/types/wordpress";
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  ogImageUrl,
+  paginatedPath,
+  truncate,
+} from "@/lib/seo";
+import { SITE_NAME } from "@/lib/site";
+import { stripHtml } from "@/lib/format";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 
 interface TagPageProps {
-  params: { slug: string };
-  searchParams: { page?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}
+
+function parsePage(value: string | undefined): number {
+  return Math.max(1, parseInt(value ?? "1", 10) || 1);
 }
 
 // Pre-render each tag archive at build time; unknown tags render on-demand.
@@ -22,8 +36,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: TagPageProps): Promise<Metadata> {
   const resolvedParams = await params;
+  const pageNum = parsePage((await searchParams).page);
   const [data, settings] = await Promise.all([
     fetchPostsByTagAPI(resolvedParams.slug, 1, 1),
     fetchSiteSettingsAPI(),
@@ -36,29 +52,38 @@ export async function generateMetadata({
     };
   }
 
-  const description =
-    tag.description || `Pregledajte sve objave označene sa ${tag.name}`;
-  const siteName = settings.siteTitle || "FEM Sportiva";
-  const ogImageUrl = `/api/og?type=category&title=${encodeURIComponent(tag.name)}&subtitle=${encodeURIComponent(description)}&siteName=${encodeURIComponent(siteName)}`;
+  const description = truncate(
+    stripHtml(tag.description) ||
+      `Sve objave označene oznakom ${tag.name}: vijesti, priče i analize iz ženskog sporta.`,
+  );
+  const tagName = stripHtml(tag.name);
+  const pageTitle = pageNum > 1 ? `${tagName} – stranica ${pageNum}` : tagName;
+  const canonical = paginatedPath(`/tags/${resolvedParams.slug}`, pageNum);
+  const ogImage = ogImageUrl({
+    type: "category",
+    title: tagName,
+    subtitle: description,
+    siteName: settings.siteTitle || SITE_NAME,
+  });
 
   return {
-    title: tag.name,
-    description: description,
+    title: pageTitle,
+    description,
     openGraph: {
-      title: tag.name,
-      description: description,
+      title: pageTitle,
+      description,
       type: "website",
-      url: `/tags/${resolvedParams.slug}`,
-      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+      url: canonical,
+      images: [{ url: ogImage, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: tag.name,
-      description: description,
-      images: [ogImageUrl],
+      title: pageTitle,
+      description,
+      images: [ogImage],
     },
     alternates: {
-      canonical: `/tags/${resolvedParams.slug}`,
+      canonical,
     },
   };
 }
@@ -66,7 +91,7 @@ export async function generateMetadata({
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const currentPage = parseInt(resolvedSearchParams.page || "1");
+  const currentPage = parsePage(resolvedSearchParams.page);
   const perPage = 10;
 
   const data = await fetchPostsByTagAPI(
@@ -84,29 +109,36 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     notFound();
   }
 
+  const tagName = stripHtml(tag.name);
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: tag.name,
-    description:
-      tag.description || `Pregledajte sve objave označene sa ${tag.name}`,
-    url: `${process.env.NEXT_PUBLIC_SITE_URL}/tags/${resolvedParams.slug}`,
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: total,
-      itemListElement: posts.map((post: any, index: number) => {
-        const categories = post._embedded?.["wp:term"]?.[0] || [];
-        const primaryCategory = categories[0];
-        const categorySlug = primaryCategory?.slug || "uncategorized";
-
-        return {
-          "@type": "ListItem",
-          position: index + 1,
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/${categorySlug}/${post.slug}`,
-          name: post.title?.rendered || "",
-        };
-      }),
-    },
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        name: tagName,
+        description:
+          stripHtml(tag.description) ||
+          `Sve objave označene oznakom ${tagName}.`,
+        url: absoluteUrl(paginatedPath(`/tags/${resolvedParams.slug}`, currentPage)),
+        inLanguage: "hr",
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: total,
+          itemListElement: posts.map(
+            (post: WP_REST_API_Post, index: number) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              url: absoluteUrl(`/${getPrimaryCategorySlug(post)}/${post.slug}`),
+              name: stripHtml(post.title?.rendered),
+            }),
+          ),
+        },
+      },
+      breadcrumbJsonLd([
+        { name: "Naslovnica", path: "/" },
+        { name: tagName, path: `/tags/${resolvedParams.slug}` },
+      ]),
+    ],
   };
 
   return (
@@ -136,8 +168,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         ) : (
           <>
             <div className={styles.postsGrid}>
-              {posts.map((post: any) => (
-                <PostCard key={post.id} post={post} />
+              {posts.map((post: WP_REST_API_Post) => (
+                <ArticleCard key={post.id} post={post} variant="grid" showExcerpt showKicker mobileList />
               ))}
             </div>
 
@@ -150,7 +182,6 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }
