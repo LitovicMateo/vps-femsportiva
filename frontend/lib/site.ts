@@ -32,3 +32,13 @@ export const RSS_URL = "/feed.xml";
  * Populate ({ label, href }) once a pages route exists.
  */
 export const FOOTER_PAGES: ReadonlyArray<{ label: string; href: string }> = [];
+
+/**
+ * Categories kept out of navigation (header/footer) and the homepage. Their
+ * archives and posts still exist and stay reachable by URL and search.
+ */
+export const HIDDEN_CATEGORY_SLUGS = new Set([
+  "sportcastov-manifest",
+  "petak-kod-pajde",
+  "mma",
+]);

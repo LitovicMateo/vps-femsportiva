@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { fetchCategories } from "@/lib/wordpress";
+import { HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { FOOTER_PAGES, RSS_URL, SITE_TAGLINE, SOCIAL_LINKS } from "@/lib/site";
 import ConsentSettingsButton from "@/components/seo/ConsentSettingsButton";
 import styles from "./Footer.module.css";
@@ -10,7 +11,10 @@ const MAX_CATEGORIES = 6;
 
 export default async function Footer() {
   const categories = (await fetchCategories())
-    .filter((cat) => !EXCLUDED_SLUGS.has(cat.slug))
+    .filter(
+      (cat) =>
+        !EXCLUDED_SLUGS.has(cat.slug) && !HIDDEN_CATEGORY_SLUGS.has(cat.slug),
+    )
     .slice(0, MAX_CATEGORIES);
 
   const hasPages = FOOTER_PAGES.length > 0;

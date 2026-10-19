@@ -11,7 +11,11 @@ import AuthorBox from "@/components/author/AuthorBox";
 import { getAuthor, stripHtml } from "@/lib/format";
 import { getPrimaryCategorySlug } from "@/lib/utils";
 import { DEFAULT_OG_IMAGE, absoluteUrl, getSiteUrl } from "@/lib/seo";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import {
+  HIDDEN_CATEGORY_SLUGS,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+} from "@/lib/site";
 import styles from "./page.module.css";
 import type { Metadata } from "next";
 import type { WP_REST_API_Post, WP_REST_API_Category } from "@/types/wordpress";
@@ -52,7 +56,13 @@ export default async function Home() {
     fetchPostsAPI({ perPage: 30 }),
     fetchCategoriesAPI(),
   ]);
-  const allPosts: WP_REST_API_Post[] = initialData.posts || [];
+  // Posts in hidden categories stay reachable by URL/search but not on the homepage.
+  const allPosts: WP_REST_API_Post[] = (initialData.posts || []).filter(
+    (post: WP_REST_API_Post) =>
+      !(post._embedded?.["wp:term"]?.[0] || []).some((term) =>
+        HIDDEN_CATEGORY_SLUGS.has(term.slug),
+      ),
+  );
 
   // Lead = first sticky post, else the newest post.
   const leadPost = allPosts.find((p) => p.sticky) || allPosts[0];
@@ -61,7 +71,10 @@ export default async function Home() {
   const latestPosts = rest.slice(3, 11);
 
   const topCategories = allCategories
-    .filter((cat: WP_REST_API_Category) => cat.count > 0)
+    .filter(
+      (cat: WP_REST_API_Category) =>
+        cat.count > 0 && !HIDDEN_CATEGORY_SLUGS.has(cat.slug),
+    )
     .sort(
       (a: WP_REST_API_Category, b: WP_REST_API_Category) => b.count - a.count,
     )
